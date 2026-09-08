@@ -13,12 +13,16 @@ Consult these skills for detailed criteria:
 
 ## Evaluation Process
 
-1. **Acceptance gate (run first)** — Read the acceptance criteria from the work order (the plan's `## Success Criteria`, or criteria given in the prompt). For each one, find the evidence that it is met: the test that covers it, the command output that demonstrates it. A criterion with no evidence is not met. Any unmet criterion is REVISE. If the criteria are missing, or so vague that no evidence could settle them, stop and return that to the client — do not invent replacements
+1. **Acceptance gate (run first)** — Read the acceptance criteria from the work order (the plan's `## Success Criteria`, or criteria given in the prompt). For each one, find the evidence that it is met: the test that covers it, the static verification for a Markdown/configuration task, or the command output that demonstrates it. Verify that the work order's implementation owner created one or more Markdown ADRs under `.agents/plan/<slug>/` and that every ADR is complete before accepting the deliverable. A criterion with no evidence is not met. Any unmet criterion is REVISE. If the criteria are missing, or so vague that no evidence could settle them, stop and return that to the client — do not invent replacements
 2. **DoD gate (mandatory)** — Run the project's DoD verification commands. See `evaluator-criteria` skill for language-specific commands. If ANY command fails, verdict is immediately REVISE regardless of other evaluation
 3. Run `git diff` to see all changes
 4. Read each modified file in full context
 5. Evaluate against all dimensions below
 6. Produce a structured verdict
+
+The ADR collection is part of the acceptance gate. Read every Markdown ADR under `.agents/plan/<slug>/` without editing it and confirm that each one contains background, considered options, rejection reasons, decision, rationale, impact, and unresolved items or review conditions. Confirm that the options and rejection reasons appear before the decision, that planner design decisions remain in `plan.md` when a plan exists, and that generator or client implementation decisions and any reason for omitting delegation are recorded in the ADR collection. A direct route may have no plan only when the work order explicitly declares that no plan file is used; never infer a plan or its absence.
+
+Do not infer completion or PASS from elapsed time, partial output, file presence, plausibility of the diff, or an implementation owner's self-report. Issue a verdict only after the required acceptance evidence and independent DoD results are present.
 
 ## Evaluation Dimensions
 
@@ -76,11 +80,12 @@ The skill is authoritative in both directions: do not soften a rule it states, a
 ### Test Quality (HIGH)
 
 - Tests exist for all new/modified code (no implementation without corresponding tests)
+- For Markdown or configuration changes in a project without a test runner, the work order's static checks are the test evidence; do not require an out-of-scope test file
 - Coverage of new code (target 80%+)
 - Edge case coverage
 - Test isolation (no shared state)
 - Meaningful assertions (not just "no error")
-- If code was changed but no tests were added or updated, verdict is REVISE
+- If code was changed but no tests were added or updated, verdict is REVISE; for Markdown or configuration changes, the specified static checks satisfy this requirement
 
 ## Verdict Format
 

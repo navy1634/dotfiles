@@ -10,20 +10,7 @@ login_shell = "/bin/zsh"
 "brew:coreutils" = "latest"
 "brew:git" = "latest"
 "brew:grep" = "latest"
-# cask
-"brew-cask:claude-code@latest" = "latest"
-"brew-cask:codex" = "latest"
-"brew-cask:font-hack-nerd-font" = "latest"
-"brew-cask:ghostty" = "latest"
-"brew-cask:google-chrome" = "latest"
-"brew-cask:notion" = "latest"
-"brew-cask:rancher" = "latest"
-"brew-cask:raycast" = "latest"
-"brew-cask:slack" = "latest"
-"brew-cask:thebrowsercompany-dia" = "latest"
-"brew-cask:visual-studio-code" = "latest"
 
-# mise の brew-cask バックエンドが未対応な cask は brew に直接投げる。
-# Microsoft 系と Zoom は pkg installer の choices、gcloud-cli は preflight の copy を使っている
+# Formula の導入後に、Brewfile の不足 Cask を Homebrew Bundle で適用する。
 [bootstrap.hooks.post-packages]
-run = "brew install --cask gcloud-cli microsoft-auto-update microsoft-excel microsoft-powerpoint microsoft-word windows-app zoom"
+run = "brew bundle --file=\"{{ config_root }}/Brewfile\" --no-upgrade"

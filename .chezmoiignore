@@ -6,6 +6,9 @@ mise.mac.toml
 mise.ubuntu.toml
 README.md
 cspell.json
+Brewfile
+AGENTS.md
+.claude/**
 
 # --- Windows ---
 {{ if eq .chezmoi.os "windows" }}
