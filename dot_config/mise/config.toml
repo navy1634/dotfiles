@@ -25,3 +25,4 @@ zoxide = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = []
+windows_shim_mode = "hardlink"

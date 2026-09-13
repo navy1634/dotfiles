@@ -25,5 +25,6 @@ AppData/**
 {{ else if eq .chezmoi.os "linux" }}
 Library/**
 AppData/**
+dot_config/zed/**
 
 {{ end }}

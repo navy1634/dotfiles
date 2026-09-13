@@ -1,0 +1,183 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "cli_default_open_behavior": "existing_window",
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 1000
+    }
+  },
+  "agent_servers": {
+    "claude-acp": {
+      "type": "registry"
+    }
+  },
+  "edit_predictions": {
+    "copilot": {
+      "enable_next_edit_suggestions": true
+    },
+    "provider": "copilot"
+  },
+  "collaboration_panel": {
+    "dock": "right"
+  },
+  "agent": {
+    "sidebar_side": "right",
+    "dock": "right",
+    "favorite_models": [],
+    "model_parameters": []
+  },
+  "git_panel": {
+    "dock": "left",
+    "tree_view": true
+  },
+  "outline_panel": {
+    "dock": "right"
+  },
+  "project_panel": {
+    "dock": "left"
+  },
+  // 改行コードは LF 強制
+  "line_ending": "enforce_lf",
+  // AI 機能を無効にする場合に true にする
+  // "disable_ai": true,
+  "minimap": {
+    "show": "always"
+  },
+  "terminal": {
+    "shell": {
+      "program": "pwsh.exe"
+    }
+  },
+  "icon_theme": "Material Icon Theme",
+  // こっちは UI 全体の設定
+  "ui_font_size": 12,
+  // こっちはコードを書く部分の設定
+  "buffer_font_size": 14,
+  // 行間を VS Code と同等にする
+  "buffer_line_height": {
+    "custom": 1.3
+  },
+  // 120文字目と200文字目にルーラーをひく
+  "wrap_guides": [
+    120,
+    200
+  ],
+  "theme": {
+    "mode": "dark",
+    "light": "One Light",
+    "dark": "Ayu Dark"
+  },
+  // ステータスバーの表示設定
+  "status_bar": {
+    // 改行コードを表示させる(設定名が変更される恐れあり)
+    "line_endings_button": true
+  },
+  "format_on_save": "on",
+  "languages": {
+    "Python": {
+      "tab_size": 4,
+      "language_servers": [
+        "ruff"
+      ],
+      "formatter": "language_server",
+      "code_actions_on_format": {
+        "source.fixAll": true
+      }
+    },
+    "Go": {
+      "tab_size": 4,
+      "language_servers": [
+        "gopls",
+        "golangci-lint-langserver"
+      ],
+      "formatter": "language_server",
+      "code_actions_on_format": {
+        "source.fixAll": true
+      }
+    },
+    "JavaScript": {
+      // vtsls を完全にオフにすると、Biome ではカバーしきれない高度な型推論やリファクタリング機能（変数名の一括変更など）が
+      // 使えなくなる場合があります。もし補完が物足りないと感じたら、vtsls だけは残しておくのも一つの手です
+      "language_servers": [
+        "biome",
+        "!eslint",
+        "!vtsls"
+      ],
+      "formatter": {
+        "external": {
+          "command": "biome",
+          "arguments": [
+            "format",
+            "--stdin-file-path",
+            "{buffer_path}"
+          ]
+        }
+      },
+      "code_actions_on_format": {
+        "source.fixAll": true
+      }
+    },
+    "TypeScript": {
+      "language_servers": [
+        "biome",
+        "!eslint",
+        "!vtsls"
+      ]
+    },
+    "JSON": {
+      "language_servers": [
+        "biome",
+        "json-language-server"
+      ],
+      "formatter": "language_server"
+    },
+    "JSONC": {
+      "language_servers": [
+        "biome",
+        "json-language-server"
+      ],
+      "formatter": "language_server" // これで外部コマンドではなく LSP に任せる
+    },
+    "CSS": {
+      "language_servers": [
+        "biome"
+      ],
+      "formatter": {
+        "external": {
+          "command": "biome",
+          "arguments": [
+            "format",
+            "--stdin-file-path",
+            "{buffer_path}"
+          ]
+        }
+      }
+    },
+    "HTML": {
+      "tab_size": 2,
+      "language_servers": [
+        "biome"
+      ],
+      "formatter": {
+        "external": {
+          "command": "biome",
+          "arguments": [
+            "format",
+            "--stdin-file-path",
+            "{buffer_path}"
+          ]
+        }
+      }
+    },
+    "Jinja2": {
+      "tab_size": 2
+    }
+  }
+}
