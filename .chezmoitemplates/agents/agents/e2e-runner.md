@@ -18,7 +18,7 @@ Read the `coding-standards` skill before writing a test. For the purposes of tha
 - Type hints on every function, fixtures and page objects included
 - Docstrings and comments in Japanese, Google Style, and no module-level docstring
 - Every import sits at the top of the file. Never import inside a test body or a helper
-- No `typing` module, no nested function definitions, no full-width brackets or symbols
+- No `typing` module except `from typing import Any`, no nested function definitions, no full-width brackets or symbols
 - Named constants instead of magic numbers — timeouts, retry counts, expected result sizes
 - Values that belong to one group (browser, environment, position) go in an Enum, not a row of constants
 - Test names and Arrange-Act-Assert structure follow the skill's "Testing Standards"

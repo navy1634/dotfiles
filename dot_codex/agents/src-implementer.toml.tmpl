@@ -1,0 +1,7 @@
+name = "src-implementer"
+description = "アプリケーションソースの実装担当。planで定めたsrc境界だけを変更し、テストやTerraformは変更しない。"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "max"
+developer_instructions = """
+{{ template "agents/agents/src-implementer.md" . }}
+"""

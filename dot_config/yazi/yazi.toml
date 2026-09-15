@@ -30,10 +30,10 @@ ueberzug_offset = [ 0, 0, 0, 0 ]
 
 [opener]
 vim_editor = [
-	{ run = 'nvim "$@"', desc = "$EDITOR", block = true },
+	{ run = 'nvim %s', desc = "$EDITOR", block = true },
 ]
 vscode_editor = [
-	{ run = 'code "$@"',    orphan = true, desc = "code" },
+	{ run = 'code %s',    orphan = true, desc = "code" },
 ]
 edit = [
 	{ run = "${EDITOR:-vi} %s", desc = "$EDITOR",      for = "unix", block = true },

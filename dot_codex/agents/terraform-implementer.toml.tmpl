@@ -1,0 +1,7 @@
+name = "terraform-implementer"
+description = "AWS Terraformの実装担当。planで定めたTerraform境界だけを変更し、テストやアプリケーションソースは変更しない。"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "max"
+developer_instructions = """
+{{ template "agents/agents/terraform-implementer.md" . }}
+"""

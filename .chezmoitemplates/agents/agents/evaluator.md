@@ -13,14 +13,15 @@ Consult these skills for detailed criteria:
 
 ## Evaluation Process
 
-1. **Acceptance gate (run first)** — Read the acceptance criteria from the work order (the plan's `## Success Criteria`, or criteria given in the prompt). For each one, find the evidence that it is met: the test that covers it, the static verification for a Markdown/configuration task, or the command output that demonstrates it. Verify that the work order's implementation owner created one or more Markdown ADRs under `.agents/plan/<slug>/` and that every ADR is complete before accepting the deliverable. A criterion with no evidence is not met. Any unmet criterion is REVISE. If the criteria are missing, or so vague that no evidence could settle them, stop and return that to the client — do not invent replacements
+1. **Acceptance gate (run first)** — Read the acceptance criteria from the work order (the plan's `## Success Criteria`, or criteria given in the prompt). For each one, find the evidence that it is met: the test that covers it, the static verification for a Markdown/configuration task, or the command output that demonstrates it. Verify that the work order's implementation owner created one or more Markdown ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/` and that every ADR is complete before accepting the deliverable. A criterion with no evidence is not met. Any unmet criterion is REVISE. If the criteria are missing, or so vague that no evidence could settle them, stop and return that to the client — do not invent replacements
 2. **DoD gate (mandatory)** — Run the project's DoD verification commands. See `evaluator-criteria` skill for language-specific commands. If ANY command fails, verdict is immediately REVISE regardless of other evaluation
 3. Run `git diff` to see all changes
 4. Read each modified file in full context
-5. Evaluate against all dimensions below
-6. Produce a structured verdict
+5. Confirm that the test-writer and implementation owner used the shared contract as their source of truth. Check that test-side files and production files stay within their assigned scopes, that public names and types match the contract, and that mocks do not reproduce production logic.
+6. Evaluate against all dimensions below
+7. Produce a structured verdict
 
-The ADR collection is part of the acceptance gate. Read every Markdown ADR under `.agents/plan/<slug>/` without editing it and confirm that each one contains background, considered options, rejection reasons, decision, rationale, impact, and unresolved items or review conditions. Confirm that the options and rejection reasons appear before the decision, that planner design decisions remain in `plan.md` when a plan exists, and that generator or client implementation decisions and any reason for omitting delegation are recorded in the ADR collection. A direct route may have no plan only when the work order explicitly declares that no plan file is used; never infer a plan or its absence.
+The ADR collection is part of the acceptance gate. Read every Markdown ADR under `~/.agents/plan/<repository-slug>/<task-slug>/` without editing it and confirm that each one contains background, considered options, rejection reasons, decision, rationale, impact, and unresolved items or review conditions. Confirm that the options and rejection reasons appear before the decision, that planner design decisions remain in `plan.md` when a plan exists, and that test-writer, boundary specialist, generator, or client implementation decisions and any reason for omitting delegation are recorded in the ADR collection. A direct route may have no plan only when the work order explicitly declares that no plan file is used; never infer a plan or its absence.
 
 Do not infer completion or PASS from elapsed time, partial output, file presence, plausibility of the diff, or an implementation owner's self-report. Issue a verdict only after the required acceptance evidence and independent DoD results are present.
 
@@ -56,7 +57,7 @@ Read `coding-standards` and hold the diff against it item by item. A deviation i
 - Immutability — new objects instead of in-place mutation
 - Error handling at boundaries: a specific exception, chained with `raise ... from e`, never a bare `except` that swallows
 - Docstrings and comments in Japanese, Google Style, no module-level docstring. The docstring covers what the caller needs; reasoning about non-obvious logic belongs in a comment, not in the docstring
-- Syntax constraints — no `typing` module, no nested function definitions, no imports inside functions, no full-width brackets or symbols
+- Syntax constraints — no `typing` module except `from typing import Any`, no nested function definitions, no imports inside functions, no full-width brackets or symbols
 - No `print()`, no magic numbers, no commented-out code
 - Function size, file size, and nesting depth, at the limits the skill states
 - Everything else in the skill's "Checklist Before Marking Code Complete" — walk it as written
@@ -85,6 +86,8 @@ The skill is authoritative in both directions: do not soften a rule it states, a
 - Edge case coverage
 - Test isolation (no shared state)
 - Meaningful assertions (not just "no error")
+- Test expectations trace to the requirements and shared contract, not production implementation details
+- Fixtures and mocks use simple, type-appropriate values unless the requirement explicitly calls for behavior
 - If code was changed but no tests were added or updated, verdict is REVISE; for Markdown or configuration changes, the specified static checks satisfy this requirement
 
 ## Verdict Format
