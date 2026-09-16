@@ -65,10 +65,10 @@
 | 責務 | 担当 |
 | --- | --- |
 | 要件と受け入れ条件を確定し、最終判定を出す | メインセッション |
-| 設計と実装計画を作る | planner（planner経路を選んだ場合） |
+| 設計と実装計画を作り、plan.mdを作成する | planner（planner経路を選んだ場合） |
 | 振る舞い変更のテスト設計、テストコード、テスト用mockを作る | test-writer |
-| プロダクションコードを実装する | generator、terraform-implementer、src-implementer、またはメインセッション（経路判定に従う） |
-| テスト設計・実装上の判断とADRを記録する | test-writerと各実装担当者 |
+| プロダクションコードを実装し、契約外の判断をplannerへ戻す | generator、terraform-implementer、src-implementer、またはメインセッション（経路判定に従う） |
+| 設計判断をADRに記録する | planner（planner経路を選んだ場合） |
 | 受け入れ条件、DoD、品質を独立して検証する | evaluator |
 
 作業規模に応じて、plannerの使用有無と実装経路を次のように判定します。
@@ -79,15 +79,15 @@
 | 小規模な実装 | test-writerが先にテストを作成し、メインセッションまたは実装担当者がproductionを実装して、evaluatorが検証する。軽微変更ではないが、一つのコンポーネント・一つの実装ファイルに収まり、要件と契約が明確で、既存パターンに沿い、新たな設計判断を要しない変更を指す |
 | 中規模以上の作業 | plannerで共有契約と境界を整理した後、test-writerがテストを作成し、メインセッションまたは境界別の実装担当者がproductionを実装して、evaluatorが検証する。複数コンポーネント、複数の実装ファイル、設計判断、要件の曖昧さのいずれかがある場合を含む |
 
-複数の実装ファイルにまたがる作業は、規模が小さく見えてもplannerを使います。実装ファイル数の判定では、全タスクに付随するADRのファイルは数えません。判定に迷う場合や、実装中に設計判断または要件の曖昧さが判明した場合は、planner経路へ切り替えます。
+複数の実装ファイルにまたがる作業は、規模が小さく見えてもplannerを使います。実装ファイル数の判定では、planner経路の作業に付随するplanとADRのファイルは数えません。判定に迷う場合や、実装中に設計判断または要件の曖昧さが判明した場合は、planner経路へ切り替えます。
 
 実装担当者を使うかどうかは一律に決めません。タスクの規模、複雑さ、安全性、並行作業の必要性、専門性、独立した実装担当の有効性と、委託による説明・同期・実行のオーバーヘッドを比較します。並行作業、専門性、一定以上の規模や複雑さ、安全性のための独立した実装担当が有効な場合は実装担当者を使い、それらの利点がオーバーヘッドを上回らずメインセッションが効率的にproductionを実装できる場合は、test-writerを使った後にメインセッションがproductionだけを実装します。どちらの経路でもevaluatorの独立検証を行います。
 
 ### サブエージェントの数と再利用
 
-親エージェントは、委託前にタスク単位の役割と書き込み範囲を決め、同じ役割のサブエージェントをファイル単位や評価回数単位で増やしません。通常の変更では、test-writer、実装担当者、evaluatorをそれぞれ1体ずつにします。plannerが必要な場合も、plannerは1体です。
+親エージェントは、親タスクの開始時に全体の役割マップと各作業単位の書き込み範囲を決めます。同一の親タスクでplanner経路を選んだ場合はplannerを1体だけ、evaluatorは1体だけ起動し、タスク完了まで同じインスタンスを保持します。複数の独立した作業単位（たとえば別々のLambda）を並行開発する場合に限り、各作業単位の契約と書き込み範囲が独立していることを確認したうえで、test-writerと実装担当者を単位ごとに1体ずつ起動できます。別の親タスクを並行して管理する場合は、親タスクごとに役割マップを持ちます。同じ役割のサブエージェントを、工程、ファイル、テスト、評価回数、失敗、再試行ごとに増やしてはいけません。
 
-同一タスクの再評価や差し戻しでは、新しいサブエージェントを立てず、同じ役割の既存エージェントを再利用してフィードバックを渡します。新しいエージェントを作成できるのは、書き込み範囲が変わった場合、既存エージェントが終了して再利用できない場合、または既存の役割では扱えない技術境界が計画で追加された場合だけです。役割の独立性は毎回プロセスを作り直すことではなく、テストと実装の責務および入力を分けることで確保します。
+同一作業単位の再評価や差し戻しでは、新しいサブエージェントを立てず、その作業単位を担当する同じ役割の既存エージェントを再利用してフィードバックを渡します。たとえば `generator → evaluator → generator` の流れでは、evaluatorの指摘を最初のgeneratorへ渡し、別のgeneratorを起動してはいけません。REVISE、失敗、再試行、工程の切り替えは作業単位の終了を意味せず、新しいエージェントを作成する理由になりません。新しいエージェントを作成できるのは、書き込み範囲が変わった場合、既存エージェントが終了して再利用できない場合、または既存の役割では扱えない技術境界が計画で追加された場合だけです。役割の独立性は毎回プロセスを作り直すことではなく、テストと実装の責務および入力を分けることで確保します。
 
 ### TDDの役割分離
 
@@ -99,11 +99,11 @@ test-writerは契約に必要な単純なmockを作成します。特別な振�
 
 AWS LambdaのようにTerraformとsrcが同じタスクに含まれる場合、planで `terraform` と `src` の契約および書き込み範囲を分け、terraform-implementerとsrc-implementerを各1体まで起動します。ファイルごとにエージェントを起動してはいけません。両者が独立して進められるか、順序が必要かはplanで定め、test-writerのRED確認後にその順序で実装します。
 
-plannerの計画は `~/.agents/plan/<repository-slug>/<task-slug>/plan.md` に保存し、`<repository-slug>` は `git rev-parse --path-format=absolute --git-common-dir` の末尾名から `.git` を除いた値、`<task-slug>` は作業開始日を先頭にした `YYYYMMDD-...` 形式とします。worktreeのディレクトリ名はリポジトリ識別子に使いません。旧Claude計画ディレクトリは使用しません。計画の `Approval` は、計画全文を確認したユーザーだけが明示的に `[ ]` から `[x]` へ変更できます。親エージェント、planner、generator、evaluatorは、ユーザーの承認を自己申告で代替したり、Approvalを `[x]` に変更したりしてはいけません。
+plannerの計画は `~/.agents/plan/<repository-slug>/<task-slug>/plan.md` に保存し、設計判断のADRも同じディレクトリにplannerが作成します。`<repository-slug>` は `git rev-parse --path-format=absolute --git-common-dir` の末尾名から `.git` を除いた値、`<task-slug>` は作業開始日を先頭にした `YYYYMMDD-...` 形式とします。worktreeのディレクトリ名はリポジトリ識別子に使いません。旧Claude計画ディレクトリは使用しません。計画の `Approval` は、計画全文を確認したユーザーだけが明示的に `[ ]` から `[x]` へ変更できます。親エージェント、planner、generator、evaluatorは、ユーザーの承認を自己申告で代替したり、Approvalを `[x]` に変更したりしてはいけません。
 
-各タスクでは、test-writerと各実装担当者が `~/.agents/plan/<repository-slug>/<task-slug>/` 配下に複数のADR Markdownを作成します。各ADRは背景、検討した選択肢、不採用理由、採用した決定、根拠、影響、未解決事項または見直し条件を含めます。選択肢と不採用理由を先に比較し、その後に決定を記録します。plannerの設計判断は計画に、test-writer、実装担当者、またはメインセッションの実装判断と委託を省略した理由はADRに記録し、evaluatorは書き込みを行わずADR集合の完全性を検証します。
+planner経路では、plannerが `~/.agents/plan/<repository-slug>/<task-slug>/` 配下に必要なADR Markdownを作成します。各ADRは背景、検討した選択肢、不採用理由、採用した決定、根拠、影響、未解決事項または見直し条件を含めます。選択肢と不採用理由を先に比較し、その後に決定を記録します。test-writer、実装担当者、メインセッションはADRを作成せず、契約にない設計判断や要件変更が必要になった場合は既存plannerへ戻します。plannerを使わない明確な小規模タスクではADRを作成せず、新しい設計判断が生じた時点でplanner経路へ切り替えます。evaluatorは書き込みを行わず、plannerが作成したADR集合の完全性を検証します。
 
-メインセッションは、軽微変更に加えて、実装担当者の専門性・並行性・独立性の利点が委託オーバーヘッドを上回らないと判断したproduction実装も直接担当できます。振る舞い変更を直接実装する場合もtest-writerは省略せず、実装判断と実装担当者を省略した理由をADRに記録し、evaluatorの独立検証を受けます。
+メインセッションは、軽微変更に加えて、実装担当者の専門性・並行性・独立性の利点が委託オーバーヘッドを上回らないと判断したproduction実装も直接担当できます。振る舞い変更を直接実装する場合もtest-writerは省略せず、契約内の実装を行います。新たな設計判断が必要になった場合はADRを自分で作成せず、planner経路へ切り替えます。
 
 サブエージェントを使う場合は、サブエージェントが明示的に完了を報告し、実装と検証の証拠を返すまで、依存する次の工程へ進みません。実行中の作業への割り込み、再指示、編集は、具体的な阻害要因または明示的な依頼がある場合に限り、不要な介入をしません。経過時間、部分出力、ファイルの存在、親エージェントの推測だけで完了と判定しません。
 
@@ -120,9 +120,10 @@ test-writerはテスト、fixture、mockを先に作り、失敗を確認して�
 
 ## Code Editing Rules (CRITICAL)
 
-- **Do not reformat code.** Never insert or remove line breaks, change indentation, or alter whitespace beyond what the user requested. Respect the project's formatter.
+- **Do not reformat code.** Never insert or remove line breaks, change indentation, or alter whitespace beyond what the user requested. When a formatter is configured, let it decide line wrapping, including whether function signatures and parameter lists are split; do not manually add line breaks just to make code look formatted. Respect the project's formatter.
 - **Do not delete existing comments.** If a comment exists, leave it as-is unless the user explicitly asks to remove it.
 - **Match existing comment style.** When adding comments, follow the format already used in the file (punctuation, placement). The language is not up for matching — comments are written in Japanese per 日本語で書く対象, even when the surrounding comments are in English.
+- **Do not end Japanese docstrings or comments with `。`.** This applies to one-line and multi-line docstrings as well as comments; do not place it at the end of the text before the closing `"""` or comment line ending.
 - **Do not add comments that merely restate adjacent code, name the tool being used, or identify where configuration is managed.** Add a comment only when it explains a non-obvious reason or constraint.
 - **Match existing code patterns.** Before writing new code, read the surrounding code and replicate its conventions (naming, structure, idioms).
 - **Never assume your approach is better.** Follow established patterns in the codebase even if you would write it differently.

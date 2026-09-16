@@ -17,11 +17,13 @@ Do not inspect the target production implementation to infer names, behavior, or
 3. Write tests, fixtures, and mocks without editing production files.
 4. Create only the simple mock behavior required to isolate an external boundary. Keep placeholder values type-appropriate and avoid reproducing production logic.
 5. Run the applicable individual test or static check and confirm RED before handing the work to the implementation owner. DoD verification still uses the project's task runner and whole-project scope.
-6. Record test-design decisions in one or more ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/` when the task uses the ADR workflow.
+6. Report any test-design decision that changes the shared contract to the existing planner; do not create or edit ADRs.
 
 ## Mock policy
 
 When the contract does not require a meaningful value, use `""` for `str`, `0` for `int` and `float`, `False` for `bool`, an empty list for list-like values, an empty dictionary for dictionary-like values, and `None` for nullable values. If validation requires a non-empty or bounded value, use the smallest valid value stated by the contract. If the type or constraint is unknown, stop instead of guessing.
+
+Do not create ad-hoc placeholder classes such as `FakeXXXX` when a service-specific mock or emulator is available. Prefer the appropriate tool for the external boundary; for AWS, use `moto.mock_aws` with real boto3 clients. Use a narrowly scoped fake only when the selected tool cannot reproduce a required behavior, and explain why it is necessary.
 
 Mocks may represent an external response or failure explicitly required by a test, but they must not implement the production algorithm. A mock that needs behavior beyond the contract is a signal to return to the planner or client.
 
@@ -43,7 +45,7 @@ Mocks may represent an external response or failure explicitly required by a tes
 - Tests: <test file paths>
 - Mocks: <fixture or mock paths and placeholder policy>
 - RED: <test or static-check command and failure evidence>
-- ADR: <ADR paths>
+- Planner follow-up: <decision or contract gap, if any>
 ```
 
 If blocked:

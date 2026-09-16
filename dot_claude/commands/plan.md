@@ -13,7 +13,7 @@ This command invokes the **planner** agent only when the task meets the planner 
 2. **Read Codebase** - Identify existing patterns and affected components
 3. **Make Design Decisions** - Document choices with rationale
 4. **Define Shared Contract** - Record public names, paths, argument and return types, inputs, outputs, external boundaries, and implementation write scopes. Split `terraform` and `src` scopes when both are involved
-5. **Output Plan File** - Write to `~/.agents/plan/<repository-slug>/<task-slug>/plan.md`, where `<repository-slug>` identifies the Git common directory rather than the worktree and `<task-slug>` starts with the work-start date in `YYYYMMDD-...` form
+5. **Output Plan and Design ADRs** - Write `plan.md` to `~/.agents/plan/<repository-slug>/<task-slug>/` and create the design ADRs in the same directory, where `<repository-slug>` identifies the Git common directory rather than the worktree and `<task-slug>` starts with the work-start date in `YYYYMMDD-...` form
 6. **Wait for Approval** - MUST receive explicit user approval before the selected test-writer and implementation owner(s) proceed
 
 ## When to Use
@@ -30,6 +30,8 @@ Use `/plan` when:
 Do not use `/plan` for a minor change, defined as one implementation file, no test needed, and no behavior change. A small behavior change may also skip `/plan` when it stays within one component and one implementation file, has clear requirements and a shared contract, follows an existing pattern, and needs no new design decision. In that case, invoke one test-writer, then choose the client or an implementation owner by comparing task size, complexity, safety, parallel-work needs, specialist knowledge, independent implementation value, and delegation overhead, and always run evaluator.
 
 ## Plan Output Format
+
+When updating an existing `plan.md` or ADR, read the current file and its diff, then use a targeted `apply_patch` edit. Do not reconstruct or replace the entire file, create a temporary full-file copy, or use `cp` or an equivalent whole-file operation for an incremental update. Preserve untouched content, user edits, and the `Approval` checkbox; a full-file rewrite requires an explicit user request.
 
 The plan is written to `~/.agents/plan/<repository-slug>/<task-slug>/plan.md` with this structure:
 
@@ -63,7 +65,7 @@ The plan is written to `~/.agents/plan/<repository-slug>/<task-slug>/plan.md` wi
 ## Success Criteria
 ```
 
-The task directory may also contain multiple implementation ADRs in Markdown. The test-writer creates ADRs for test-design decisions, each implementation owner creates ADRs for implementation decisions, and planner creates only `plan.md` without editing the ADR collection.
+When the planner route is selected, planner creates the necessary design ADRs in the task directory. The test-writer, implementation owners, and client do not create or edit ADRs; they return new design decisions to the existing planner. A direct route with no design decision has no ADR.
 
 ## Approval Flow
 

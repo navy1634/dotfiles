@@ -9,16 +9,16 @@ These phases are split across the client/contractor boundary defined in `agents.
 | Phase | Owner | What that side does |
 |-------|-------|---------------------|
 | Classify | Main session (client) | Chooses the route from the task size, file/component scope, design risk, and requirement clarity |
-| Plan | **planner**, only for the planner route | Records design decisions and implementation steps in `~/.agents/plan/<repository-slug>/<task-slug>/plan.md` |
+| Plan | **planner**, only for the planner route | Records design decisions and implementation steps in `~/.agents/plan/<repository-slug>/<task-slug>/plan.md` and creates the design ADRs in the same directory |
 | Test | **test-writer** | Derives tests, fixtures, and type-appropriate mocks from the requirements and contract, then confirms RED |
-| Implement | Client or implementation subagent, according to the route decision | The implementation owner uses the requirements, contract, and RED evidence to implement production code and records decisions in the ADR collection |
+| Implement | Client or implementation subagent, according to the route decision | The implementation owner uses the requirements, contract, and RED evidence to implement production code; it returns new design decisions to the existing planner and does not create ADRs |
 | Verify | **evaluator**, then the client | The evaluator runs the DoD gate and reports a verdict; the client judges the deliverable against the acceptance criteria |
 
-The existing minor-change definition is the smallest route: one implementation file, no test needed, and no behavior change. The client may make that change directly, followed by a standalone evaluator check. A small implementation that is not a minor change may skip planning only when it stays within one component and one implementation file, has clear requirements, follows an existing pattern, and needs no new design decision. For behavior changes, use one test-writer followed by one implementation owner, then evaluator; compare the task's size, complexity, safety, parallel-work needs, specialist knowledge, independent-implementer value, and delegation overhead when choosing client or subagent ownership. Medium or larger work, multiple components, multiple implementation files, design decisions, or ambiguous requirements uses planner; after planning, choose the implementation owner with the same comparison, and always run evaluator. The required ADR is a workflow record and does not count as an implementation file for this classification.
+The existing minor-change definition is the smallest route: one implementation file, no test needed, and no behavior change. The client may make that change directly, followed by a standalone evaluator check. A small implementation that is not a minor change may skip planning only when it stays within one component and one implementation file, has clear requirements, follows an existing pattern, and needs no new design decision. For behavior changes, use one test-writer followed by one implementation owner, then evaluator; compare the task's size, complexity, safety, parallel-work needs, specialist knowledge, independent-implementer value, and delegation overhead when choosing client or subagent ownership. Medium or larger work, multiple components, multiple implementation files, design decisions, or ambiguous requirements uses planner; after planning, choose the implementation owner with the same comparison, and always run evaluator. Planner-route plan and ADR files are workflow records and do not count as implementation files for this classification.
 
 Plans use `~/.agents/plan/<repository-slug>/<task-slug>/plan.md`, where `<repository-slug>` comes from the absolute Git common directory with `.git` removed and `<task-slug>` starts with the work-start date in `YYYYMMDD-...` form; the worktree directory name is not used and the legacy Claude plan directory is not used. Planner creates a plan with an unchecked `Approval`. The full plan is presented to the user, and only the user may explicitly approve it and change `[ ]` to `[x]`. No parent agent or subagent may change the checkbox or substitute a self-reported approval.
 
-Every task has multiple implementation ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/`. The test-writer and implementation owner create separate ADRs in Markdown with background, considered options, rejection reasons, decision, rationale, impact, and unresolved items or review conditions. Options and rejection reasons must precede each decision. Planner design decisions stay in `plan.md`, test-writer, boundary specialist, generator, or client implementation decisions go in the ADR collection, and evaluator verifies every ADR without writing.
+When the planner route is selected, planner creates the required ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/` in Markdown with background, considered options, rejection reasons, decision, rationale, impact, and unresolved items or review conditions. Options and rejection reasons must precede each decision. Planner records design decisions in both `plan.md` and the ADRs. The test-writer, boundary specialist, generator, and client do not create or edit ADRs; they return new design decisions to the existing planner. A direct route with no design decision has no ADR, and evaluator verifies every planner-created ADR without writing.
 
 ## Phase 0: Classify
 
@@ -31,7 +31,7 @@ Before implementation, the client records the route and role map in the work ord
 - Define clear, testable completion criteria
 - Surface dependencies, risks, and reversibility concerns
 
-This phase applies only to the planner route. Planner analyzes the codebase and writes design decisions and ordered steps to `~/.agents/plan/<repository-slug>/<task-slug>/plan.md`. The plan must include verifiable success criteria. Planner leaves `Approval` unchecked and never changes it to `[x]`.
+This phase applies only to the planner route. Planner analyzes the codebase, writes design decisions and ordered steps to `~/.agents/plan/<repository-slug>/<task-slug>/plan.md`, and creates the design ADRs in the same directory. The plan must include verifiable success criteria. Planner leaves `Approval` unchecked and never changes it to `[x]`.
 
 For behavior-changing work, the plan also defines the shared contract: public function or handler names, module or file paths, argument and return types, inputs and outputs, external boundaries, and each implementation owner's write scope. A small route that skips planning must put the same contract in the work order. If Terraform and source code are both in scope, the plan identifies `terraform` and `src` owners and their dependency order.
 
@@ -41,6 +41,7 @@ For behavior-changing work, the plan also defines the shared contract: public fu
 - Make design decisions with rationale
 - Define implementation steps and test strategy
 - Write the plan file to `~/.agents/plan/<repository-slug>/<task-slug>/plan.md`
+- Write the design ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/`
 - Include verifiable success criteria
 - Leave the user-owned `Approval` checkbox unchanged
 
@@ -56,7 +57,7 @@ If user requests changes, return to Planner. If response is ambiguous, do not tr
 
 ## Phase 2: Implement
 
-This phase belongs to the implementation owner. The client hands over the approved plan for the planner route or the direct work order for the small route when an implementation subagent is selected. For behavior-changing work, the test-writer completes the RED handoff before implementation begins, including when the client owns production implementation. When the direct client route is selected, the client owns only the production scope, creates the ADR collection, and hands the result to evaluator. Everything below binds whoever holds the work order.
+This phase belongs to the implementation owner. The client hands over the approved plan for the planner route or the direct work order for the small route when an implementation subagent is selected. For behavior-changing work, the test-writer completes the RED handoff before implementation begins, including when the client owns production implementation. When the direct client route is selected, the client owns only the production scope and does not create ADRs; a new design decision switches the task to the planner route. Everything below binds whoever holds the work order.
 
 ### TDD role sequence
 

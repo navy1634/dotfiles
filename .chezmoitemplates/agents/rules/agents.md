@@ -11,9 +11,9 @@ Implementation work is a client/contractor relationship, run like a small team t
 | Interpreting what the user wants | client | May ask, may not decide |
 | Requirements (what to build, why) | client | Implements them as written; never reinterprets |
 | Acceptance criteria | client | Verifies against them; never edits, relaxes, or adds to them |
-| Design and implementation plan | **planner**, when the planner route is selected | Client states constraints, does not draft the design itself |
-| Design decisions during implementation | Implementation owner, within the approved plan or small-task work order | Generator or client records the decision in the ADR; escalate to planner when the work exceeds the selected route |
-| Implementation ADR | Test-writer and implementation owner for their respective decisions | Planner records design decisions in the plan; evaluator verifies completeness and never writes |
+| Design, implementation plan, and design ADR | **planner**, when the planner route is selected | Client states constraints, does not draft the design itself |
+| Design decisions during implementation | **planner**, through a revised plan and ADR | Implementation owners stay within the approved plan and return new design decisions to the existing planner |
+| ADR ownership | **planner**, for planner-route design decisions | Test-writer, implementation owners, and client do not create ADRs; evaluator verifies completeness and never writes |
 | Test design, test code, fixtures, and mocks | **test-writer** for behavior changes | A client-owned minor change has no test-side implementation; the implementation owner does not write or edit tests |
 | Production code | **generator**, **terraform-implementer**, **src-implementer**, or client, according to the route decision | The implementation owner does not edit test code |
 | DoD command execution | Implementation owner, then **evaluator** re-runs it as the gate | Client does not substitute the evaluator run |
@@ -27,7 +27,7 @@ First classify the task before choosing the pipeline. A minor change is the exis
 
 A small implementation is larger than a minor change only in behavior, not in design scope. It stays within one component and one implementation file, has clear requirements and acceptance criteria, follows an existing pattern, and requires no new design decision. Compare the task's size, complexity, safety, need for parallel work, specialist knowledge, value of an independent implementer, and delegation overhead when choosing the implementation owner; the behavior-change pipeline remains test-writer → implementation owner → evaluator even when the client owns production implementation.
 
-Use the planner → test-writer → client or implementation owner(s) → evaluator path for medium or larger work, any work spanning multiple components or multiple implementation files, work requiring a design decision, or work with ambiguous requirements. Multiple implementation files trigger the planner regardless of the apparent size. The required ADR is a workflow record and is excluded from this file-count decision.
+Use the planner → test-writer → client or implementation owner(s) → evaluator path for medium or larger work, any work spanning multiple components or multiple implementation files, work requiring a design decision, or work with ambiguous requirements. Multiple implementation files trigger the planner regardless of the apparent size. Planner-route plan and ADR files are workflow records and are excluded from this file-count decision.
 
 For all behavior-changing work, select one test-writer before selecting the production implementation owner. The test-writer and implementation owner both use the requirements and the plan or work-order contract as their source of truth. A test-writer does not derive a public name, signature, or behavior from production code, and an implementation owner does not derive behavior from test code. For a small route without a plan, the work order must contain the same contract details.
 
@@ -37,11 +37,11 @@ If the scope or requirements become unclear during a small implementation, stop 
 
 ### Plan and approval ownership
 
-Planner output is written only to `~/.agents/plan/<repository-slug>/<task-slug>/plan.md`; `<repository-slug>` is the final directory name of the absolute path returned by `git rev-parse --path-format=absolute --git-common-dir`, with `.git` removed, and `<task-slug>` starts with the work-start date in `YYYYMMDD-...` form. The worktree directory name is not used as the repository identifier. The legacy Claude plan directory is not a valid plan location. A new plan starts with an unchecked `Approval` entry. The full plan must be shown to the user, and only the user may explicitly approve it and change the checkbox from `[ ]` to `[x]`. The parent agent and every subagent must leave that checkbox unchanged and must not replace the user's approval with a self-reported claim. A generator pre-check rejects such a claim even when the file happens to contain `[x]`.
+Planner outputs `plan.md` and necessary design ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/`; `<repository-slug>` is the final directory name of the absolute path returned by `git rev-parse --path-format=absolute --git-common-dir`, with `.git` removed, and `<task-slug>` starts with the work-start date in `YYYYMMDD-...` form. The worktree directory name is not used as the repository identifier. The legacy Claude plan directory is not a valid plan location. A new plan starts with an unchecked `Approval` entry. The full plan must be shown to the user, and only the user may explicitly approve it and change the checkbox from `[ ]` to `[x]`. The parent agent and every subagent must leave that checkbox unchanged and must not replace the user's approval with a self-reported claim. A generator pre-check rejects such a claim even when the file happens to contain `[x]`.
 
 ### ADR ownership
 
-Every task has multiple implementation ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/`. The test-writer and implementation owner create separate ADRs for their decisions, whether the owner is a boundary specialist or the client. Each ADR must contain `## Background`, `## Options Considered`, `## Rejected Because`, `## Decision`, `## Rationale`, `## Impact`, and `## Unresolved Items or Review Conditions`, or equivalent headings in the repository's language. Options and rejection reasons come before the decision. The planner's design decisions belong in `plan.md`, while the test-writer's, implementation owner's, or client's decisions and the reason for omitting delegation belong in the ADR collection. The evaluator is read-only and verifies that every ADR is complete.
+When the planner route is selected, the planner creates `plan.md` and the necessary ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/`. Each ADR must contain `## Background`, `## Options Considered`, `## Rejected Because`, `## Decision`, `## Rationale`, `## Impact`, and `## Unresolved Items or Review Conditions`, or equivalent headings in the repository's language. Options and rejection reasons come before the decision. The planner records design decisions in the plan and ADRs. The test-writer, implementation owners, and client do not create or edit ADRs; if their work reveals a new design decision, they return it to the existing planner. A direct route with no design decision has no ADR, and a new design decision switches the task to the planner route. The evaluator is read-only and verifies that every planner-created ADR is complete.
 
 When a responsibility is unclear, it belongs to the client — the client then either owns it or delegates it explicitly. What no role may do is quietly assume it.
 
@@ -69,7 +69,7 @@ Owns:
 Must NOT:
 
 - Write production code when an implementation-agent route has been selected, or test code when the test-writer route has been selected
-- Skip the ADR or evaluator when implementing directly
+- Skip the evaluator, or skip a required planner-route ADR, when implementing directly
 - Re-decide a design the contractor already made; send it back instead
 - Substitute its own lint/test run for the evaluator's quality gate
 - Report completion without checking the deliverable against the acceptance criteria and explicit verification evidence
@@ -97,7 +97,7 @@ Owns:
 
 - Designing and writing tests, fixtures, and simple mocks from the requirements and the plan or work-order contract
 - Confirming RED before the implementation owner starts
-- Recording test-design decisions in the ADR collection and reporting the test scope, mock assumptions, and RED evidence
+- Reporting the test scope, mock assumptions, RED evidence, and any design decision that must return to the planner
 
 Must NOT:
 
@@ -108,11 +108,11 @@ Must NOT:
 
 ### Minor-change exception
 
-The client may edit directly when the change is confined to a single file, needs no test, and does not alter behavior — typos, comments, config values, documentation. For other tasks, use the routing comparison above. When the generator's parallel, specialist, scale, safety, or independent-review benefits do not outweigh delegation overhead, the client may implement directly and must record that choice in the ADR. When it is unclear which side of the line a change falls on, use planner or ask the client to resolve the scope rather than guessing.
+The client may edit directly when the change is confined to a single file, needs no test, and does not alter behavior — typos, comments, config values, documentation. For other tasks, use the routing comparison above. When the generator's parallel, specialist, scale, safety, or independent-review benefits do not outweigh delegation overhead, the client may implement directly within the settled work order and does not create an ADR. A new design decision switches the task to the planner route. When it is unclear which side of the line a change falls on, use planner or ask the client to resolve the scope rather than guessing.
 
 The same exception covers a mechanical test-only fix: an existing test's expectation is stale against a settled implementation, the root cause is already established, and the correction touches nothing but that expectation (its value, the test's name, its comments). No behavior is being designed, so there is no TDD cycle to hand over — running the DoD and the evaluator gate is enough. Delegate instead the moment any of these holds: it is still open whether the test or the implementation is wrong, a test must be added / removed / skipped / xfailed, or the fix reaches production code at all. A test rewritten so a failure stops appearing is never a minor change, however few lines it takes.
 
-The client may also implement a non-minor task directly when the task's size, complexity, safety, parallel-work needs, specialist knowledge, independent-implementer value, and delegation overhead show that direct implementation is more efficient. This is a route decision, not a blanket exception: the client records the comparison, the reason generator was omitted, and the implementation decisions in the ADR, and evaluator independently verifies the result.
+The client may also implement a non-minor task directly when the task's size, complexity, safety, parallel-work needs, specialist knowledge, independent-implementer value, and delegation overhead show that direct implementation is more efficient. This is a route decision, not a blanket exception: the client records the comparison and the reason generator was omitted in the work order. A new design decision switches the task to the planner route, and evaluator independently verifies the result.
 
 ### Work order contents (scaled to the task)
 
@@ -150,9 +150,9 @@ The client then matches the verdict against the acceptance criteria and issues t
 
 | Agent | Role | Required boundary |
 |-------|------|-------------------|
-| planner | Design decisions and implementation planning when selected | Writes only the plan it owns; does not edit implementation files or Approval |
-| test-writer | Independent test design, test code, fixtures, and mocks | Reads requirements and the contract; edits only test-side files and creates test-design ADRs |
-| generator | General production implementation and build error resolution when selected | Edits only production files in the work order and creates implementation ADRs |
+| planner | Design decisions, implementation planning, and design ADRs when selected | Writes only the plan and ADRs it owns; does not edit implementation files or Approval |
+| test-writer | Independent test design, test code, fixtures, and mocks | Reads requirements and the contract; edits only test-side files and returns new design decisions to planner |
+| generator | General production implementation and build error resolution when selected | Edits only production files in the work order; does not create ADRs and returns new design decisions to planner |
 | terraform-implementer | Terraform and AWS infrastructure implementation | Edits only Terraform files in the assigned boundary and follows the Terraform skill |
 | src-implementer | Application source implementation | Edits only source files in the assigned boundary and follows the project's source-language skills |
 | evaluator | Quality, security, performance, and acceptance verification | Reviews and runs verification; does not edit the deliverable |
@@ -180,11 +180,13 @@ These are narrow, well-specified contractor roles. They receive the same complet
                                                              └─ REDESIGN feedback
 ```
 
-The main session controls the pipeline using the agents available in the execution environment. For behavior changes, test-writer is mandatory even when the client owns production implementation. The client may be the production implementation owner on the direct route, but must still create the ADR collection and hand the result to evaluator for independent verification.
+The main session controls the pipeline using the agents available in the execution environment. For behavior changes, test-writer is mandatory even when the client owns production implementation. The client may be the production implementation owner on the direct route, but must not create ADRs; a new design decision returns the task to the existing planner or starts the planner route when none was selected, and the result then goes to evaluator for independent verification.
 
 ## Agent Constraints
 
 Do not assume that a contractor can see the parent conversation. Pass all required information in the work order. Subagents must not invoke other subagents; the parent client owns the role map and lifecycle. Require structured reports, and use files for large data exchange when the environment supports a shared workspace.
+
+Japanese docstrings and comments must not end with `。`, including immediately before a closing `"""` in one-line or multi-line docstrings.
 
 ## Invocation Rules
 

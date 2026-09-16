@@ -22,20 +22,20 @@ The main session runs this flow as the client. It owns requirements, acceptance 
 
 ### Phase 0: Route selection
 
-Classify the task before invoking an agent. The minor-change route applies to one implementation file, no test needed, and no behavior change. Every behavior change uses one test-writer before implementation; a small task may skip planning when it stays within one component and one implementation file, has clear requirements and a shared contract, follows an existing pattern, and needs no new design decision. Compare task size, complexity, safety, parallel-work needs, specialist knowledge, independent implementation value, and delegation overhead to choose client direct implementation or an implementation agent. Use planner for medium or larger work, multiple components, multiple implementation files, design decisions, or ambiguous requirements. After planning, choose one implementation owner per technical boundary named by the plan. The required ADR is excluded from the implementation-file count.
+Classify the task before invoking an agent. The minor-change route applies to one implementation file, no test needed, and no behavior change. Every behavior change uses one test-writer before implementation; a small task may skip planning when it stays within one component and one implementation file, has clear requirements and a shared contract, follows an existing pattern, and needs no new design decision. Compare task size, complexity, safety, parallel-work needs, specialist knowledge, independent implementation value, and delegation overhead to choose client direct implementation or an implementation agent. Use planner for medium or larger work, multiple components, multiple implementation files, design decisions, or ambiguous requirements. After planning, choose one implementation owner per technical boundary named by the plan. Planner-route plan and ADR files are workflow records and are excluded from the implementation-file count.
 
 Before spawning, write a role map in the work order: at most one planner, one test-writer, one implementation owner per technical boundary, and one evaluator for the task. Do not spawn agents per file, test, or evaluator iteration. On REVISE, send feedback to the existing owner; on a test-side defect, send it to the existing test-writer; on a design defect, return to the existing planner. Start a replacement only when the original agent is unavailable, its write scope changes, or the plan adds an uncovered boundary.
 
 For behavior changes, the plan or direct work order must contain a shared contract with public names, paths, argument and return types, inputs, outputs, external boundaries, and write scopes. For an AWS Lambda task, assign Terraform files to `terraform-implementer` and application source files to `src-implementer`; run them in the plan's order and in parallel only when the plan proves their contracts independent.
 
-Create one or more Markdown ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/` for every task. Resolve `<repository-slug>` from the absolute Git common directory, not the worktree directory, and use a `<task-slug>` that starts with the work-start date in `YYYYMMDD-...` form. The test-writer and each implementation owner record options and rejection reasons before their decisions, along with the background, rationale, impact, and unresolved items or review conditions. Evaluator verifies every ADR without writing.
+When the planner route is selected, planner creates the necessary design ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/`. Resolve `<repository-slug>` from the absolute Git common directory, not the worktree directory, and use a `<task-slug>` that starts with the work-start date in `YYYYMMDD-...` form. Planner records options and rejection reasons before each decision, along with the background, rationale, impact, and unresolved items or review conditions. The test-writer, implementation owners, and client do not create or edit ADRs; they return new design decisions to the existing planner. A direct route with no design decision has no ADR. Evaluator verifies every planner-created ADR without writing.
 
 ### Phase 1: Planning (conditional)
 
 Invoke the **planner** agent (model: opus) only when Phase 0 selects the planner route:
 
 - Pass the full task description from user input
-- Planner analyzes codebase, makes design decisions, outputs implementation plan
+- Planner analyzes codebase, makes design decisions, outputs the implementation plan and necessary design ADRs
 - Present plan to user **in full**
 - **HARD STOP**: Do NOT proceed to Phase 2 until user explicitly approves
   - Approval examples: "OK", "go ahead", "LGTM", "approve"
@@ -43,7 +43,7 @@ Invoke the **planner** agent (model: opus) only when Phase 0 selects the planner
 - Ambiguous responses ("hmm", "I see") are NOT approval. Ask for explicit confirmation
 - Before presenting the plan, confirm its `## Success Criteria` are verifiable acceptance criteria — each one settled by a named test or a command output, not by opinion. Rewrite vague ones yourself; they are the client's responsibility, not the Planner's
 - For behavior changes, confirm that the plan defines the shared contract and implementation write scopes before presenting it: public names, paths, argument and return types, inputs, outputs, external boundaries, and the `terraform`/`src` split when applicable
-- Planner writes the plan to `~/.agents/plan/<repository-slug>/<task-slug>/plan.md` with an unchecked `Approval`
+- Planner writes the plan to `~/.agents/plan/<repository-slug>/<task-slug>/plan.md` and necessary design ADRs in the same directory, with an unchecked `Approval`
 - Only the user may change `## Approval` from `[ ]` to `[x]` after reviewing the full plan
 - The parent agent and every subagent must leave the checkbox unchanged and must not replace user approval with a self-reported claim
 - The selected implementation owner proceeds only after the user-owned checkbox is `[x]`; if an implementation agent is selected, its pre-check must also find no parent-agent approval claim
@@ -52,7 +52,7 @@ For the minor route, skip only the planning and test phases, have client impleme
 
 ### Phase 2: Implementation and verification loop (max 3 iterations)
 
-If client is selected as the implementation owner, have the existing test-writer complete RED, then have client implement within the work order or approved plan, create the ADR collection, and invoke one evaluator independently. If one or more implementation agents are selected, use the following loop. Create every role instance once and reuse it for the whole task:
+If client is selected as the implementation owner, have the existing test-writer complete RED, then have client implement within the work order or approved plan and invoke one evaluator independently. If one or more implementation agents are selected, use the following loop. Create every role instance once and reuse it for the whole task:
 
 ```
 role_map = {
@@ -195,11 +195,11 @@ existing test-writer.
 
 ## ADR
 
-Create or update one or more ADR files under `~/.agents/plan/{repository_slug}/{task_slug}/`. Record options and rejection reasons before each test-design or implementation decision. The test-writer records test-design decisions, each implementation owner records implementation decisions, and the client records the reason for omitting a delegated implementation owner when the client implements directly.
+For the planner route, planner creates or updates the design ADR files under `~/.agents/plan/{repository_slug}/{task_slug}/`. Record options and rejection reasons before each decision, along with the background, rationale, impact, and unresolved items or review conditions. The test-writer, implementation owners, and client do not create or edit ADRs; they return new design decisions to the existing planner. A direct route with no design decision has no ADR.
 
 ## Prohibitions
 
-- For the planner route, no design decisions beyond the plan. For the direct route, keep decisions within the work order and record them in the ADR
+- For the planner route, implementation owners make no design decisions beyond the plan. For the direct route, keep decisions within the work order; a new design decision returns the task to the planner
 - No implementation before the test-writer's failing test or applicable static RED evidence
 - No creation or editing of tests, fixtures, or mocks
 - A parent-agent approval claim is not evidence of user approval; follow the implementation agent pre-check when a delegated implementation owner is selected
