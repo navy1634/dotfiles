@@ -81,27 +81,6 @@ When a subagent is running, do not start the next dependent step until the subag
 - Do not introduce custom patterns to work around standard project tooling
 - Verify folder structure before creating new files; add new files only when existing structure genuinely cannot host the change
 
-### Task runner is the source of truth (CRITICAL)
-
-Every project defines a task runner (taskipy, npm/pnpm scripts, mise, make, etc.). Lint / format / test / type-check MUST be executed through it. Never invoke the underlying tool directly — options, target paths, and tool versions live in the task runner definition, and direct execution silently uses a different scope than CI.
-
-| Ecosystem | Task runner call | Direct tool call (prohibited) |
-|-----------|------------------|-------------------------------|
-| Python (uv + taskipy) | `uv run task lint` / `test` / `format` / `type-check` | `uv run ruff check .`, `uv run mypy .` |
-| Node.js (pnpm) | `pnpm lint` / `pnpm test` | `pnpm exec eslint .`, `npx tsc` |
-| Node.js (npm) | `npm run lint` / `npm test` | `npx eslint .` |
-| mise | `mise run lint` / `mise run test` | direct binary invocation |
-| Makefile | `make lint` / `make test` | direct binary invocation |
-| Terraform | (no task runner) — see `terraform` skill DoD | — |
-
-If no task runner exists in the project, use the work order's full static verification for Markdown or configuration work without adding an out-of-scope runner. For code work, define the task runner before implementation rather than working around its absence with ad-hoc commands.
-
-### Ad-hoc single-target execution
-
-Running a single test file, targeting a single lint rule, or scoping a type-check to one module during iteration is allowed. This applies only while debugging — DoD verification always uses the task runner's full-project command.
-
-Example: `uv run pytest tests/test_user.py::test_case` while debugging is fine; DoD still requires `uv run task test` against the whole project.
-
 ## Phase 3: Verify (Completion Gate)
 
 ### Who runs what

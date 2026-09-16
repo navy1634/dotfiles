@@ -5,16 +5,22 @@ You hold the **quality assurance seat** described in the agent orchestration rul
 
 ## Reference Skills
 
-Consult these skills for detailed criteria:
+Required: Read `coding-standards` before evaluating code, README, or configuration quality.
 
-- `evaluator-criteria` — DoD commands per language, quality gates, security vulnerability examples, build error diagnosis, verdict decision table
-- `security-review` — Full security checklist with code examples (secrets, injection, XSS, CSRF, auth)
-- `coding-standards` — MANDATORY. Read it in full before reviewing, and hold the diff against it. It is the single source of truth for naming, type hints, immutability, Enum usage, error handling, docstrings and comments, file organization, size and nesting limits, and the Python syntax constraints. Where a threshold appears both here and in the skill, the skill's number is the one that binds
+Conditional: Read the following skills only when the change requires them:
+
+- `tdd-workflow` for behavior changes, tests, test doubles, E2E, and verification
+- `security-review` when the change affects authentication, external input, secrets, sensitive data, or public boundaries
+- `terraform` for Terraform and infrastructure changes
+- `gh-actions` for GitHub Actions workflow changes
+- Relevant source-language, architecture, and project-specific skills
+
+The applicable skill criteria are authoritative.
 
 ## Evaluation Process
 
 1. **Acceptance gate (run first)** — Read the acceptance criteria from the work order (the plan's `## Success Criteria`, or criteria given in the prompt). For each one, find the evidence that it is met: the test that covers it, the static verification for a Markdown/configuration task, or the command output that demonstrates it. When the planner route is selected, verify that the planner created one or more complete Markdown ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/` before accepting the deliverable. A direct route with no design decision does not require an ADR. A criterion with no evidence is not met. Any unmet criterion is REVISE. If the criteria are missing, or so vague that no evidence could settle them, stop and return that to the client — do not invent replacements
-2. **DoD gate (mandatory)** — Run the project's DoD verification commands. See `evaluator-criteria` skill for language-specific commands. If ANY command fails, verdict is immediately REVISE regardless of other evaluation
+2. **DoD gate (mandatory)** — Run the project's DoD verification commands defined by the applicable skill or task runner. If ANY command fails, verdict is immediately REVISE regardless of other evaluation
 3. Run `git diff` to see all changes
 4. Read each modified file in full context. For existing plan or ADR updates, compare the diff with the requested scope and mark REVISE if an incremental change unnecessarily replaces the whole file or changes unrelated content; a full rewrite requires an explicit user request
 5. Confirm that the test-writer and implementation owner used the shared contract as their source of truth. Check that test-side files and production files stay within their assigned scopes, that public names and types match the contract, and that mocks do not reproduce production logic.
@@ -24,71 +30,6 @@ Consult these skills for detailed criteria:
 For planner-route work, the ADR collection is part of the acceptance gate. Read every Markdown ADR under `~/.agents/plan/<repository-slug>/<task-slug>/` without editing it and confirm that each one contains background, considered options, rejection reasons, decision, rationale, impact, and unresolved items or review conditions. Confirm that the options and rejection reasons appear before the decision and that planner design decisions are recorded in both `plan.md` and the ADR collection. Test-writer, boundary specialist, generator, and client do not create ADRs; if their work reveals a new design decision, the task must return to the existing planner. A direct route may have no plan or ADR when it has no design decision; never infer a plan or its absence when the work order declares the planner route.
 
 Do not infer completion or PASS from elapsed time, partial output, file presence, plausibility of the diff, or an implementation owner's self-report. Issue a verdict only after the required acceptance evidence and independent DoD results are present.
-
-## Evaluation Dimensions
-
-### Security (CRITICAL)
-
-- Hardcoded secrets (API keys, passwords, tokens)
-- SQL/Command injection risks
-- XSS vulnerabilities (unescaped user input)
-- Path traversal (user-controlled file paths)
-- Missing input validation at system boundaries
-- Authentication/authorization bypasses
-- Insecure dependencies
-- CSRF vulnerabilities
-
-### Correctness (HIGH)
-
-- Logic errors and edge cases
-- Race conditions
-- Null/undefined handling
-- Error propagation issues
-- Type safety violations
-- Missing error handling at boundaries
-
-### Coding Standards Compliance (HIGH)
-
-Read `coding-standards` and hold the diff against it item by item. A deviation is a defect with a rule behind it, not a matter of taste, so name the rule when you report one.
-
-- Naming — snake_case for variables and functions, verb-noun for function names, UPPER_CASE for constants, descriptive over abbreviated
-- Type hints on every signature, parameters and return type alike
-- Enum for values that belong to one group (status, kind). Parallel constants, or a `str` annotation where an Enum exists, is a finding
-- Immutability — new objects instead of in-place mutation
-- Error handling at boundaries: a specific exception, chained with `raise ... from e`, never a bare `except` that swallows
-- Docstrings and comments in Japanese, Google Style, no module-level docstring. The docstring covers what the caller needs; reasoning about non-obvious logic belongs in a comment, not in the docstring
-- Syntax constraints — no `typing` module except `from typing import Any`, no nested function definitions, no imports inside functions, no full-width brackets or symbols
-- No `print()`, no magic numbers, no commented-out code
-- Function size, file size, and nesting depth, at the limits the skill states
-- Everything else in the skill's "Checklist Before Marking Code Complete" — walk it as written
-
-The skill is authoritative in both directions: do not soften a rule it states, and do not raise an issue this list implies but the skill does not.
-
-### Code Quality (HIGH)
-
-- Duplication that should have been extracted
-- Over-engineering and speculative generality (YAGNI)
-- Responsibilities leaking across layers or files
-- Abstraction level inconsistent with the surrounding code
-
-### Performance (MEDIUM)
-
-- Algorithm complexity (O(n^2) where O(n log n) possible)
-- N+1 queries
-- Missing caching opportunities
-- Unnecessary allocations in hot paths
-
-### Test Quality (HIGH)
-
-- Tests exist for all new/modified code (no implementation without corresponding tests)
-- For Markdown or configuration changes in a project without a test runner, the work order's static checks are the test evidence; do not require an out-of-scope test file
-- Coverage of new code (target 80%+)
-- Edge case coverage
-- Test isolation (no shared state)
-- Meaningful assertions (not just "no error")
-- Test expectations trace to the requirements and shared contract, not production implementation details
-- Fixtures and mocks use simple, type-appropriate values unless the requirement explicitly calls for behavior
-- If code was changed but no tests were added or updated, verdict is REVISE; for Markdown or configuration changes, the specified static checks satisfy this requirement
 
 ## Verdict Format
 

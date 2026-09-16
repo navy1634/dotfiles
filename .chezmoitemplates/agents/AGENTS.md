@@ -93,15 +93,14 @@
 
 振る舞いを変更する作業は、仕様または要件と、planまたは作業指示に記載した契約を共通の根拠にして、`test-writer` → 実装担当者 → `evaluator` の順に進めます。test-writerはプロダクションコードを編集せず、契約からテスト、fixture、mockを作成してREDを確認します。実装担当者は仕様と契約からプロダクションコードを実装し、test-writerが作成したテストを編集して通すことは禁止します。
 
-planには、実装とテストが共有する公開関数名、モジュールまたはファイルのパス、引数と戻り値の型、入出力、外部境界、担当する書き込み範囲を記載します。planを省略できる作業では、同じ契約を作業指示に記載します。これにより、テストを実装から、実装をテストから推測せずに、両者を仕様へ結び付けます。
+共有契約の詳細はplannerとtdd-workflow skillに従い、作業指示には必要な境界を明示します。
 
-test-writerは契約に必要な単純なmockを作成します。特別な振る舞いが要件にない場合、`str` は空文字、`int` と `float` は `0`、`bool` は `False`、リストは空、辞書は空、nullableな値は `None` を基本値とし、契約上の入力制約がある場合だけ最小の有効値を使います。型や制約が契約から決まらない場合は、実装を推測せずplannerまたは親エージェントへ戻します。
 
 AWS LambdaのようにTerraformとsrcが同じタスクに含まれる場合、planで `terraform` と `src` の契約および書き込み範囲を分け、terraform-implementerとsrc-implementerを各1体まで起動します。ファイルごとにエージェントを起動してはいけません。両者が独立して進められるか、順序が必要かはplanで定め、test-writerのRED確認後にその順序で実装します。
 
 plannerの計画は `~/.agents/plan/<repository-slug>/<task-slug>/plan.md` に保存し、設計判断のADRも同じディレクトリにplannerが作成します。`<repository-slug>` は `git rev-parse --path-format=absolute --git-common-dir` の末尾名から `.git` を除いた値、`<task-slug>` は作業開始日を先頭にした `YYYYMMDD-...` 形式とします。worktreeのディレクトリ名はリポジトリ識別子に使いません。旧Claude計画ディレクトリは使用しません。計画の `Approval` は、計画全文を確認したユーザーだけが明示的に `[ ]` から `[x]` へ変更できます。親エージェント、planner、generator、evaluatorは、ユーザーの承認を自己申告で代替したり、Approvalを `[x]` に変更したりしてはいけません。
 
-planner経路では、plannerが `~/.agents/plan/<repository-slug>/<task-slug>/` 配下に必要なADR Markdownを作成します。各ADRは背景、検討した選択肢、不採用理由、採用した決定、根拠、影響、未解決事項または見直し条件を含めます。選択肢と不採用理由を先に比較し、その後に決定を記録します。test-writer、実装担当者、メインセッションはADRを作成せず、契約にない設計判断や要件変更が必要になった場合は既存plannerへ戻します。plannerを使わない明確な小規模タスクではADRを作成せず、新しい設計判断が生じた時点でplanner経路へ切り替えます。evaluatorは書き込みを行わず、plannerが作成したADR集合の完全性を検証します。
+planner経路では、plannerが計画とADRを管理し、他の役割は設計判断を独断で記録しません。evaluatorは書き込みを行わず、ADRの完全性を検証します。
 
 メインセッションは、軽微変更に加えて、実装担当者の専門性・並行性・独立性の利点が委託オーバーヘッドを上回らないと判断したproduction実装も直接担当できます。振る舞い変更を直接実装する場合もtest-writerは省略せず、契約内の実装を行います。新たな設計判断が必要になった場合はADRを自分で作成せず、planner経路へ切り替えます。
 
@@ -123,7 +122,6 @@ test-writerはテスト、fixture、mockを先に作り、失敗を確認して�
 - **Do not reformat code.** Never insert or remove line breaks, change indentation, or alter whitespace beyond what the user requested. When a formatter is configured, let it decide line wrapping, including whether function signatures and parameter lists are split; do not manually add line breaks just to make code look formatted. Respect the project's formatter.
 - **Do not delete existing comments.** If a comment exists, leave it as-is unless the user explicitly asks to remove it.
 - **Match existing comment style.** When adding comments, follow the format already used in the file (punctuation, placement). The language is not up for matching — comments are written in Japanese per 日本語で書く対象, even when the surrounding comments are in English.
-- **Do not end Japanese docstrings or comments with `。`.** This applies to one-line and multi-line docstrings as well as comments; do not place it at the end of the text before the closing `"""` or comment line ending.
 - **Do not add comments that merely restate adjacent code, name the tool being used, or identify where configuration is managed.** Add a comment only when it explains a non-obvious reason or constraint.
 - **Match existing code patterns.** Before writing new code, read the surrounding code and replicate its conventions (naming, structure, idioms).
 - **Never assume your approach is better.** Follow established patterns in the codebase even if you would write it differently.
