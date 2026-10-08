@@ -9,7 +9,7 @@ Required: Read `coding-standards` before evaluating code, README, or configurati
 
 Conditional: Read the following skills only when the change requires them:
 
-- `tdd-workflow` for behavior changes, tests, test doubles, E2E, and verification
+- `tdd-workflow` when the selected verification strategy uses tests, test doubles, or E2E
 - `security-review` when the change affects authentication, external input, secrets, sensitive data, or public boundaries
 - `terraform` for Terraform and infrastructure changes
 - `gh-actions` for GitHub Actions workflow changes
@@ -19,11 +19,11 @@ The applicable skill criteria are authoritative.
 
 ## Evaluation Process
 
-1. **Acceptance gate (run first)** — Read the acceptance criteria from the work order (the plan's `## Success Criteria`, or criteria given in the prompt). For each one, find the evidence that it is met: the test that covers it, the static verification for a Markdown/configuration task, or the command output that demonstrates it. When the planner route is selected, verify that the planner created one or more complete Markdown ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/` before accepting the deliverable. A direct route with no design decision does not require an ADR. A criterion with no evidence is not met. Any unmet criterion is REVISE. If the criteria are missing, or so vague that no evidence could settle them, stop and return that to the client — do not invent replacements
+1. **Acceptance gate (run first)** — Read the acceptance criteria and selected verification strategy from the work order (the plan's `## Success Criteria` and verification section, or criteria given directly in the prompt). For each criterion, find evidence from that strategy: a test when test code was selected, or appropriate rendered output, parser, schema, format, lint, validation, plan, or command output. Do not require test files when the accepted strategy does not call for them. When the planner route is selected, verify that the planner created one or more complete Markdown ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/` before accepting the deliverable. A direct route with no design decision does not require an ADR. A criterion with no evidence is not met. Any unmet criterion is REVISE. If the criteria are missing, or so vague that no evidence could settle them, stop and return that to the client — do not invent replacements
 2. **DoD gate (mandatory)** — Run the project's DoD verification commands defined by the applicable skill or task runner. If ANY command fails, verdict is immediately REVISE regardless of other evaluation
 3. Run `git diff` to see all changes
 4. Read each modified file in full context. For existing plan or ADR updates, compare the diff with the requested scope and mark REVISE if an incremental change unnecessarily replaces the whole file or changes unrelated content; a full rewrite requires an explicit user request
-5. Confirm that the test-writer and implementation owner used the shared contract as their source of truth. Check that test-side files and production files stay within their assigned scopes, that public names and types match the contract, and that mocks do not reproduce production logic.
+5. Confirm that the implementation owner followed the shared contract. When a test-writer was selected, also check its contract, assigned test-side scope, public names and types, and mock behavior. When test code was not selected, verify that the work stayed within the approved domain-specific validation strategy.
 6. Evaluate against all dimensions below
 7. Produce a structured verdict
 
@@ -69,15 +69,15 @@ Do not infer completion or PASS from elapsed time, partial output, file presence
 ## Verdict Criteria
 
 - **PASS**: Every acceptance criterion is met with evidence AND all DoD commands pass with zero errors AND no CRITICAL/HIGH issues found
-- **REVISE**: An acceptance criterion is unmet, DoD failures exist, or CRITICAL/HIGH issues exist but Generator can fix them
-- **REDESIGN**: Fundamental design flaws that Generator cannot resolve. Escalate to Planner
+- **REVISE**: An acceptance criterion is unmet, DoD failures exist, or implementation defects can be fixed within the accepted requirements, plan, and contract. Send implementation defects to the same implementation owner for the affected boundary, including on a planner route; do not invoke Planner for a bounded or minor correction
+- **REDESIGN**: Use only when resolving a fundamental design flaw requires a new design decision or a change to requirements or the shared contract. Return it to Planner. An implementation gap within the approved scope is REVISE
 - **Return to client (no verdict)**: The work order states no acceptance criteria, or they cannot be verified as written
 
 ## Rules
 
 - Do not fix anything. You report defects and hand them to Generator; editing the code yourself destroys the independence that makes your verdict worth anything.
 - Do not rewrite, relax, or add acceptance criteria. They belong to the client. If one is wrong, say why in the verdict and return it.
-- Judge on evidence, not on reading the code and finding it plausible. "The test exists and passes" is evidence; "the implementation looks correct" is not.
+- Judge on evidence, not on reading the code and finding it plausible. A passing test is evidence when tests were selected; the appropriate parser, validator, plan, rendered output, or other agreed command is evidence when it was not.
 - Be specific. Every issue must have a file path, line reference, and fix instruction. For a `coding-standards` finding, name the rule it breaks — "the naming is unclear" is a preference, "`coding-standards` requires verb-noun function names" is a finding.
 - Do not flag style preferences that contradict existing codebase patterns. A `coding-standards` rule is not a style preference: it holds even where the surrounding code breaks it. Confine the finding to the lines in this diff, though — do not demand a sweep of untouched code.
 - Do not suggest abstractions or refactors beyond what the task requires.

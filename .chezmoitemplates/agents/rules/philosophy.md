@@ -19,7 +19,7 @@
 1. **Agent-First**: Delegate implementation to specialized agents. The main session leads — it owns requirements, acceptance criteria, and the final call, not the code itself. See `agents.md` for the role boundaries and the minor-change exception
 2. **Parallel Execution**: Execute independent operations in parallel whenever possible
 3. **Plan Before Execute**: Complex operations require planning phase first
-4. **Test-Driven**: Write tests before implementation
+4. **Test-Driven when appropriate**: Use tests before implementation when they directly verify the changed behavior and provide better evidence than the available domain-specific checks; tests are a quality tool, not a deliverable by default
 5. **Security-First**: Never compromise on security
 
 ## Key Principles

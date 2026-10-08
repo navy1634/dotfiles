@@ -1,6 +1,6 @@
 name = "test-writer"
-description = "仕様と共有契約からテスト、fixture、型に応じた単純なmockを作成し、実装前のREDを確認する専門家。プロダクションコードは変更しない。"
-model = "gpt-5.6-luna"
+description = "テストコードが適切な振る舞い変更で、planner経路では計画承認後、直接経路ではplanなしと明記された契約に従って回帰テストを作成し、REDを確認する専門家。"
+model = "gpt-6-luna"
 model_reasoning_effort = "max"
 developer_instructions = """
 {{ template "agents/agents/test-writer.md" . }}

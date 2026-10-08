@@ -58,6 +58,16 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/kunikeni/dotfiles/main/bin
 | GitHub CLI | `dot_config/gh/` |
 | VSCode | `Library/Application Support/Code/User/settings.json` |
 
+### Codex の compaction 後に記憶を復旧する
+
+`dot_codex/modify_hooks.json` は chezmoi の `modify_` source で、既存の `~/.codex/hooks.json` に compact 用 `SessionStart` hook を追加する。`source = "compact"` のときだけ `~/.codex/MEMORY.md` を読み、復旧指示と本文を Codex 仕様の JSON 形式で次のモデルリクエストへ渡すため、通常起動では注入しない。
+
+設定変更には `jq` を使い、既存イベントと hook handler を保つ。フック定義は `hooks.json` に置き、`config.toml` の既存設定は保つ。同じ設定階層で両形式にフックを定義した場合、Codex は警告する。スクリプトの正本は `dot_codex/hooks/executable_reload-memory.sh` で、chezmoi 適用後は `~/.codex/hooks/reload-memory.sh` に配置される。メモリがない、空、読み取れない、または JSON 化できない場合は復旧指示だけを返して成功終了し、実行時に jq が使えない場合も Codex 本体の処理を止めない。設定マージ時に jq が使えず既存 hooks.json がある場合は、その内容を変更せず出力する。
+
+handler の `additionalContextLimit` は公式の既定値と同じ 2500 token にする。しきい値を超えた追加コンテキストは Codex がファイルに退避し、モデルには短いプレビューを渡す。0 にするとしきい値がなくなり、巨大な `MEMORY.md` がモデルのコンテキスト全体を使い切るおそれがあるため採用しない。新しい hook は Codex の `/hooks` 画面で確認して信頼を許可するまで実行されない。設定形式とイベント順序は[Codex Hooks 公式仕様](https://developers.openai.com/codex/hooks/)に従う。
+
+Codex CLI `0.160.0` で hooks 機能が有効であることを確認した。`sh -n` と `bash -n`、特殊文字を含む本文の jq による JSON 往復確認、メモリ不在・空・読み取り不能・不正 UTF-8、jq 不在の各ケースで hook 単体の JSON 出力と終了状態を確認した。shellcheck は環境にないため実行していない。実際の Codex compaction 後の継続リクエストでの注入は未確認であり、適用後に /hooks で信頼を許可して確認する。
+
 ## パッケージを追加する
 
 **マシンの一部なら OS のパッケージマネージャ、作業環境の一部なら mise。**

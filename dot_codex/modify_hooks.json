@@ -1,0 +1,51 @@
+#!/bin/sh
+set -u
+
+command_path='"$HOME/.codex/hooks/reload-memory.sh"'
+current=$(cat)
+
+if ! command -v jq >/dev/null 2>&1; then
+  if [ -n "$current" ]; then
+    printf '%s\n' "$current"
+  else
+    printf '%s\n' '{"hooks":{"SessionStart":[{"matcher":"^compact$","hooks":[{"type":"command","command":"\"$HOME/.codex/hooks/reload-memory.sh\"","additionalContextLimit":2500}]}]}}'
+  fi
+  exit 0
+fi
+
+if [ -n "$current" ]; then
+  input_json=$current
+else
+  input_json='{}'
+fi
+
+if updated=$(printf '%s\n' "$input_json" | jq -s --arg command "$command_path" '
+  def handler:
+    {type: "command", command: $command, additionalContextLimit: 2500};
+  def ensure_handler:
+    . as $group
+    | ($group.hooks // []) as $handlers
+    | $group + {
+        hooks: (
+          if any($handlers[]?; .command == $command) then
+            [$handlers[] | if .command == $command then . + handler else . end]
+          else
+            $handlers + [handler]
+          end
+        )
+      };
+  (.[0] // {})
+  | .hooks = (.hooks // {})
+  | .hooks.SessionStart = (
+      (.hooks.SessionStart // []) as $groups
+      | if any($groups[]?; .matcher == "^compact$") then
+          [$groups[] | if .matcher == "^compact$" then ensure_handler else . end]
+        else
+          $groups + [{matcher: "^compact$", hooks: [handler]}]
+        end
+    )
+' 2>/dev/null); then
+  printf '%s\n' "$updated"
+else
+  printf '%s\n' "$current"
+fi
