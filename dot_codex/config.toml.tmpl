@@ -18,7 +18,7 @@ status_line_use_colors = true
 dock-icon-preference = "codex-system"
 usePointerCursors = false
 appshotSoundEnabled = false
-conversationDetailMode = "STEPS_PROSE"
+conversationDetailMode = "STEPS_COMMANDS"
 git-pr-instructions = "テンプレートに従うこと"
 git-commit-instructions = "対応内容を短く簡潔に"
 enabled-reasoning-efforts = ["low", "medium", "high", "xhigh", "ultra", "max"]
@@ -39,7 +39,6 @@ glob_scan_max_depth = 10
 
 [permissions.workspace-no-env.filesystem.":workspace_roots"]
 "**/.env" = "deny"
-"**/.env.*" = "deny"
 
 [permissions.workspace-no-env.network]
 enabled = true
@@ -56,6 +55,10 @@ source = "{{ .chezmoi.homeDir }}/.codex/.tmp/bundled-marketplaces/openai-bundled
 source_type = "git"
 source = "https://github.com/navy1634/plugin-agent-toolbox.git"
 ref = "main"
+
+[marketplaces.nifty-plugins]
+source_type = "git"
+source = "https://github.com/niftycorporation/claude-code-plugins-marketplace.git"
 
 [plugins."codex-app-tools@openai-bundled"]
 enabled = true
@@ -98,3 +101,84 @@ enabled = true
 
 [plugins."general-tools@agent-toolbox"]
 enabled = true
+
+[plugins."unified-computer-use@openai-bundled"]
+enabled = true
+
+[plugins."chrome@openai-bundled"]
+enabled = true
+
+[plugins."data-linkage-yml-generator@nifty-plugins"]
+enabled = true
+
+[plugins."query-data-platform@nifty-plugins"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[plugins."code-review@openai-bundled"]
+enabled = true
+
+[plugins."sphinx-nippou@nifty-plugins"]
+enabled = true
+
+[mcp_servers.computer-use]
+command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
+args = ["mcp"]
+cwd = "."
+enabled = false
+
+[mcp_servers.node_repl]
+args = []
+command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
+startup_timeout_sec = 120
+
+[mcp_servers.node_repl.env]
+NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
+NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/sci02236/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+CODEX_HOME = "/Users/sci02236/.codex"
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab,mcpapps"
+BROWSER_USE_TINYSKY_ENABLED = "1"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = ""
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = ""
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = ""
+BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
+BROWSER_USE_CODEX_APP_VERSION = "26.1007.30912"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/sci02236/.codex/plugins/cache/openai-bundled/browser/26.1007.30912/scripts/browser-service.mjs"}'
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex"
+
+[projects."/Users/sci02236/Documents/github.com/niftycorporation/isis_dbt"]
+trust_level = "trusted"
+
+[hooks.state]
+
+[hooks.state."/Users/sci02236/.codex/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:80c2d95d27d79d7e39b4a0aef2c2f4233aaedf9442e0efbea5828448e2b7bc5c"
+enabled = true
+
+[hooks.state."/Users/sci02236/.codex/hooks.json:permission_request:0:0"]
+trusted_hash = "sha256:934554f15a70410663a4258ad0b2a504a08bc383e84ae64277c1a9b7088bbf62"
+
+[hooks.state."/Users/sci02236/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:16018bf47347bdd3b86a8150d34eb0c6b40467d6f3e03d4bdd223f06b023748f"
+
+[hooks.state."/Users/sci02236/.codex/hooks.json:session_start:1:0"]
+trusted_hash = "sha256:50d0d053554139b00dd09f558ee647500ca963134467c517bedea618d0b1c0ec"
+
+[hooks.state."/Users/sci02236/.codex/hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:6ac12786eeaca2ed83e443a4f50e05c71ab64f3c952c35f090870f3973ba61d4"
+
+[hooks.state."/Users/sci02236/.codex/hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:a252faddc138fe2fe2634a597ad3dcd123587f0e063cc2951af03b6cbf78b9a5"
+
+[hooks.state."/Users/sci02236/.codex/hooks.json:subagent_start:0:0"]
+trusted_hash = "sha256:8eeb221f06f730c30d7fddadd7a08a61f7775ba5960873eed81b5183652c9120"
+
+[hooks.state."/Users/sci02236/.codex/hooks.json:subagent_stop:0:0"]
+trusted_hash = "sha256:3b585c923c4de251a48526a0775d9467ab53c2d30636b7c0d8dfac045d8885e8"
+
+[hooks.state."/Users/sci02236/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:e4fb447c95adcad4b526492138c4af1e9e8dd094acd01cdf985f3f9fc2fa5303"
