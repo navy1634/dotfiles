@@ -1,11 +1,11 @@
 ---
 name: code-review
-description: evaluator エージェントでコミット前の変更をセキュリティ・品質レビュー。脆弱性と品質問題を検出。
+description: メインセッションでコミット前の変更を確認し、セキュリティ・品質上の問題を報告します。
 ---
 
 # Code Review
 
-Invoke the **evaluator** agent to review uncommitted changes:
+Perform this check in the current session. Do not invoke the evaluator agent; it provides optional quality assurance for completed deliverables after their owners finish DoD, not on-demand code review. Inspect uncommitted changes:
 
 1. Run `git diff --name-only HEAD` to get changed files
 
@@ -42,12 +42,11 @@ Invoke the **evaluator** agent to review uncommitted changes:
    - Issue description
    - Specific fix instruction
 
-4. Verdict: PASS / REVISE (same criteria as evaluator agent)
+4. Verdict: PASS / REVISE based on the findings above. Do not treat this result as task completion or an evaluator QA result.
 
 ## Related
 
-This command invokes the `evaluator` agent.
-Reference skill: `evaluator-criteria`
+This command runs in the main session and does not invoke evaluator. Evaluator is reserved for optional post-completion quality assurance when it materially reduces risk.
 
 ## Arguments
 

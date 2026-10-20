@@ -18,7 +18,7 @@ status_line_use_colors = true
 dock-icon-preference = "codex-system"
 usePointerCursors = false
 appshotSoundEnabled = false
-conversationDetailMode = "STEPS_PROSE"
+conversationDetailMode = "STEPS_COMMANDS"
 git-pr-instructions = "テンプレートに従うこと"
 git-commit-instructions = "対応内容を短く簡潔に"
 enabled-reasoning-efforts = ["low", "medium", "high", "xhigh", "ultra", "max"]
@@ -36,10 +36,6 @@ extends = ":workspace"
 
 [permissions.workspace-no-env.filesystem]
 glob_scan_max_depth = 10
-
-[permissions.workspace-no-env.filesystem.":workspace_roots"]
-"**/.env" = "deny"
-"**/.env.*" = "deny"
 
 [permissions.workspace-no-env.network]
 enabled = true
