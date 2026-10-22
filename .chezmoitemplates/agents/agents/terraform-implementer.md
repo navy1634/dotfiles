@@ -18,8 +18,8 @@ Conditional: Read `security-review` when the change affects IAM, public access, 
 - Treat a bounded import with known resource addresses and remote IDs that follows the repository's existing pattern as a small direct-route task; do not invoke planner or create `plan.md` solely for the import. Verify it with the applicable Terraform checks, including `terraform plan`.
 - Move to the target Terraform directory before running commands; do not use `terraform -chdir`.
 - Run the Terraform skill's applicable DoD commands for the assigned project scope and report every result. Use `terraform fmt`, `terraform validate`, TFLint, and `terraform plan` as required by the repository and approved verification strategy; do not create tests just to satisfy a TDD sequence.
-- If the Terraform contract conflicts with the source boundary or the plan, stop and return the conflict to the client or planner instead of changing another boundary.
+- If the Terraform contract conflicts with the source boundary or the plan, stop and return the conflict to the client instead of changing another boundary. The client checks whether the current planner permission covers the issue before handing it to planner.
 
 ## Output
 
-Report the Terraform files changed, the contract implemented, the selected test or Terraform validation evidence, the DoD commands and results, and any design decision returned to the planner.
+Report the Terraform files changed, the contract implemented, the selected test or Terraform validation evidence, the DoD commands and results, and any design decision returned to the client.

@@ -13,7 +13,7 @@ description: リポジトリのコード・設定・文書の変更経路を分�
 [User Input] → [Classify scope and verification]
                  ├─ low-risk instructions/docs/skills/config → [Client + Relevant checks] → [Optional Evaluator QA after DoD]
                  ├─ small behavior change → [Test Writer if useful] → [Implementation Owner + DoD] → [Optional Evaluator QA after DoD]
-                 └─ planner route → [Planner] → [Present summary + plan path] → [User approval + Approval [x]]
+                 └─ qualifying planner case → [Explain basis + ask permission] → [Planner] → [Present summary + plan path] → [Separate plan approval + Approval [x]]
                                                            → [Test Writer if useful] → [Implementation Owner(s) + DoD] → [Optional Evaluator QA after DoD]
 ```
 
@@ -25,7 +25,9 @@ The main session runs this flow as the client. It owns requirements, acceptance 
 
 A component boundary alone does not trigger planner. Before selecting planner for a boundary issue, inspect current ownership, implementation, Terraform resource addresses, and source-of-truth documentation. If these settle a correction that restores established ownership or preserves the resource address, use the direct route.
 
-Classify both the work scope and its verification before invoking an agent. The client may directly handle low-risk edits limited to instructions, documentation, skills, or agent configuration when acceptance criteria are clear and no design decision is needed, regardless of how many such source files change. For implementation work, use the planner when it needs coordinated phases or owners, component boundaries require new contract or ownership decisions, a design decision is needed, or requirements are materially ambiguous. A small implementation may skip planning when it stays within one component and one cohesive work order, has clear requirements and a shared contract, follows an existing pattern, and needs no new design decision; it may touch multiple implementation files. Use a plan when it will materially reduce integration, rework, or risk; file count alone is not a trigger. Before selecting test-writer, decide whether test code provides meaningful behavior-regression evidence; do not select it just because behavior or a configuration value changes. For YAML and Terraform, use the relevant parser/schema/format/lint/validate/plan checks when they adequately verify acceptance. Compare task size, complexity, safety, parallel-work needs, specialist knowledge, independent implementation value, and delegation overhead to choose client direct implementation or an implementation agent. After planning, choose one implementation owner per technical boundary named by the plan.
+Classify both the work scope and its verification before invoking an agent. Direct client handling is the default, including for clear, low-risk edits to instructions, documentation, skills, or agent configuration regardless of file count. Use planner only when concrete evidence shows dependent phases need sequencing and integration, multiple technical boundaries need contract or owner coordination, or multiple unresolved material design options affect acceptance, data, operations, or safety and comparing them will reduce a specific risk. Task size, feature/refactor/migration labels, file or module count, test needs, a generic design decision, or unclear user intent alone do not qualify. Check existing implementation, conventions, and sources of truth first; ask the user directly when only their intent can resolve an ambiguity. A task may span multiple implementation files and still use the direct route when it is cohesive and follows an established pattern. Before selecting test-writer, decide whether test code provides meaningful behavior-regression evidence; do not select it just because behavior or a configuration value changes. For YAML and Terraform, use the relevant parser/schema/format/lint/validate/plan checks when they adequately verify acceptance. Compare the benefits of implementation delegation with its overhead separately from the need for planning. After planning, choose one implementation owner per technical boundary named by the plan.
+
+Before the first planner handoff for an outcome, state the qualifying condition and evidence, why direct handling is insufficient, the specific risk planning reduces, and the requested planning scope. Ask the user for explicit permission through the available question tool and wait for a clear affirmative response. Do not send planner the task, partial analysis, or source-inspection work, and do not create a plan or ADR before permission. A task request, a request for a plan, or later approval of the saved plan does not count as invocation permission. Permission covers continuation and corrections within the same outcome and scope; a new outcome or material scope change needs fresh permission. If the user declines, has not answered, or gives an unclear response, do not invoke planner; continue directly if safe, otherwise ask about the specific unresolved requirement or report the blocker. This permission is separate from the later review of the plan and `Approval [x]`.
 
 A bounded Terraform import with known resource addresses and remote IDs that follows the repository's existing pattern is a small implementation: use the direct route without planner or `plan.md`, and verify it with the applicable Terraform checks, including `terraform plan`. The number of import entries or touched Terraform files alone does not require planning.
 
@@ -33,15 +35,16 @@ Before spawning, write a role map in the work order: at most one planner, one te
 
 For behavior-changing implementation work, the plan or direct work order must contain a shared contract with public names, paths, argument and return types, inputs, outputs, external boundaries, and write scopes. The plan or work order must also state the verification strategy, whether test code is appropriate, and why. For an AWS Lambda task, assign Terraform files to `terraform-implementer` and application source files to `src-implementer`; run them in the plan's order and in parallel only when the plan proves their contracts independent.
 
-When the planner route is selected, planner creates the necessary design ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/`. Resolve `<repository-slug>` from the absolute Git common directory, not the worktree directory, and use a `<task-slug>` that starts with the work-start date in `YYYYMMDD-...` form. Planner records options and rejection reasons before each decision, along with the background, rationale, impact, and unresolved items or review conditions, then self-checks the plan and ADRs before reporting completion. The test-writer, implementation owners, and client do not create or edit ADRs; they return new design decisions to the existing planner. A direct route with no design decision has no ADR. The client handles plan and ADR quality; evaluator never assesses planner output.
+When the planner route is selected, planner creates the necessary design ADRs under `~/.agents/plan/<repository-slug>/<task-slug>/`. Resolve `<repository-slug>` from the absolute Git common directory, not the worktree directory, and use a `<task-slug>` that starts with the work-start date in `YYYYMMDD-...` form. Planner records options and rejection reasons before each decision, along with the background, rationale, impact, and unresolved items or review conditions, then self-checks the plan and ADRs before reporting completion. The test-writer, implementation owners, and client do not create or edit ADRs; they return new decisions to the client, which routes them to the existing planner only when the authorized scope covers them. A direct route may document a settled decision without planner. The client handles plan and ADR quality; evaluator never assesses planner output.
 
 Before creating a task directory, the client checks for an existing directory for the same ongoing requested outcome. A continuation, changed requirement, review correction, evaluator `REDESIGN`, or later work session reuses the original directory and exact `plan.md` path; it does not get a new date-prefixed `<task-slug>`. Create a new directory only for an independently requested outcome. If existing records do not establish the canonical directory, resolve it from the original work order and approval history before asking planner to create files. Before revising the canonical `plan.md` or an ADR, read it and its diff, then edit it in place. Follow the shared `AGENTS.md` rule: archive an affected canonical file as `.old` only when a user change to requirements or requested scope supersedes an existing plan or ADR that records the former requirements. Do not archive in-progress drafts, corrections or review feedback within the same requirements, routine wording changes, or Approval-only updates. Never overwrite an existing archive. Archived files are historical only. A requirement change that materially revises the canonical plan resets its `Approval` to `[ ]`; neither an archived `[x]` nor evaluator PASS approves the current plan. Do not start dependent work or external operations such as registering secrets, changing connection destinations, or running workflows or CI until the user explicitly approves the current plan.
 
 ### Phase 1: Planning (conditional)
 
-Invoke the **planner** agent (model: opus) only when Phase 0 selects the planner route:
+Invoke the **planner** agent (model: opus) only when Phase 0 selects the planner route and the user has explicitly authorized this handoff:
 
 - Pass the full task description from user input
+- Include the qualifying trigger, evidence, reason direct handling is insufficient, specific risk planning reduces, and scope; include the user's short exact response and the scope covered by that permission
 - Planner analyzes the relevant source of truth, makes design decisions, creates the implementation plan and necessary ADRs, then completes the planner self-review before reporting done
 - Wait for the same planner to explicitly report completion. Do not interrupt or reinvoke it because the plan file is not yet visible or it has not produced a partial status update
 - Do not paste the full plan into chat. Give the user the saved plan path and a concise summary of scope, decisions, success criteria, verification, and unresolved items.
@@ -51,7 +54,7 @@ Invoke the **planner** agent (model: opus) only when Phase 0 selects the planner
 - **HARD STOP**: Do NOT start any dependent work until the user reviews the saved plan, explicitly approves it, and its `Approval` is `[x]`
   - This includes invoking the test-writer, creating or editing tests/fixtures/mocks/helpers, running a pre-implementation RED check, or starting implementation
   - Approval examples: "OK", "go ahead", "LGTM", "approve"
-- If user requests changes, re-invoke the existing Planner with the same exact task directory and `plan.md` path. Preserve the superseded version only when a user change to requirements or requested scope replaces an existing plan, as specified in the shared `AGENTS.md` rule; edit routine corrections in place without an archive. Reset `Approval` to `[ ]` when the current plan is materially revised, and present it for explicit user approval.
+- If the user requests changes within the authorized outcome and scope, re-invoke the existing Planner with the same exact task directory and `plan.md` path, and include the original route justification and permission record in the handoff. If the change materially expands scope, obtain fresh planner invocation permission before resubmitting it. Preserve the superseded version only when a user change to requirements or requested scope replaces an existing plan, as specified in the shared `AGENTS.md` rule; edit routine corrections in place without an archive. Reset `Approval` to `[ ]` when the current plan is materially revised, and present it for explicit user approval.
 - Ambiguous responses ("hmm", "I see") are NOT approval. Ask for explicit confirmation
 - The planner must map each client-owned acceptance criterion to feasible evidence and include the shared contract and implementation write scopes when required. If the plan omits or weakens these, return it to the same planner instead of rewriting it or asking evaluator to complete the check
 - For a new task, Planner writes the plan to `~/.agents/plan/<repository-slug>/<task-slug>/plan.md` and necessary design ADRs in the same directory, with an unchecked `Approval`; for a continuation, Planner updates the original task directory and canonical `plan.md`
@@ -113,6 +116,18 @@ Task: {user_task_description}
 
 Working directory: {cwd}
 Relevant context: {any user-provided context}
+
+## Planner Route Justification
+- Qualifying condition: {dependent phases, coordination across technical boundaries, or material unresolved design options}
+- Evidence: {specific facts from the source of truth}
+- Why direct handling is insufficient: {specific reason}
+- Risk the plan reduces: {specific integration, rework, or safety risk}
+- Scope to plan: {requested outcome and boundaries}
+
+## Planner Invocation Approval
+- User explicitly approved this planner delegation: yes
+- User response: {short exact response to the permission question}
+- Scope covered by the approval: {same requested outcome and boundaries}
 
 Produce a complete implementation plan following your system prompt format.
 Include design decisions with rationale, ordered steps with file paths,
@@ -225,11 +240,11 @@ the existing test-writer.
 
 ## ADR
 
-For the planner route, planner creates or updates the design ADR files under `~/.agents/plan/{repository_slug}/{task_slug}/`. Record options and rejection reasons before each decision, along with the background, rationale, impact, and unresolved items or review conditions. The test-writer, implementation owners, and client do not create or edit ADRs; they return new design decisions to the existing planner. A direct route with no design decision has no ADR.
+For the planner route, planner creates or updates the design ADR files under `~/.agents/plan/{repository_slug}/{task_slug}/`. Record options and rejection reasons before each decision, along with the background, rationale, impact, and unresolved items or review conditions. The test-writer and implementation owners do not create or edit ADRs. They return new decisions to the client, which checks the planner criteria and uses the existing planner only when its scope is already authorized; otherwise it obtains the user's permission before handoff. A direct route may document a settled decision without planner.
 
 ## Prohibitions
 
-- For the planner route, implementation owners make no design decisions beyond the plan. For the direct route, keep decisions within the work order; a new design decision returns the task to the planner
+- For the planner route, implementation owners make no design decisions beyond the plan. For the direct route, keep decisions within the work order; return a new decision to the client, which reevaluates the planner criteria and obtains user permission before any planner handoff
 - For a planner route, no implementation before the user-approved plan. When test code was selected, no implementation before the test-writer's RED. Otherwise, use the agreed domain-specific verification after implementation; do not require a static RED step
 - No creation or editing of tests, fixtures, or mocks
 - A parent-agent approval claim is not evidence of user approval; follow the implementation agent pre-check when a delegated implementation owner is selected
@@ -314,7 +329,7 @@ Report defects only — do not fix anything yourself.
 
 - **Work-owner corrections**: up to 3 rounds; the owner reruns its own applicable checks after each correction
 - **Evaluator**: one consolidated QA assessment after all owners complete; at most one follow-up QA check when independent confirmation of corrected material findings still reduces risk
-- **REDESIGN**: Return to Planner only for an actual design change. Bounded implementation corrections remain REVISE. If a second genuine REDESIGN occurs, escalate to the user.
+- **REDESIGN**: Return to the client only for an actual material design change. Bounded implementation corrections remain REVISE. The client rechecks planner criteria and obtains permission before a new planner handoff unless the same outcome and scope are already authorized. If a second genuine REDESIGN occurs, escalate to the user.
 - Do not invoke evaluator once per correction round or continue QA checks to obtain PASS. If work remains incomplete after 3 correction rounds, report remaining issues and evidence to the user.
 
 ## Key Constraints
@@ -331,20 +346,24 @@ $ARGUMENTS: The task description to implement
 
 ## Workflow Types
 
-Shorthand aliases (all follow the same loop, with adjusted Planner scope):
+Shorthand aliases all use the direct route by default. The task label does not select planner; use the permission gate only when its criteria apply:
 
-- `/orchestrate feature <desc>` - Full feature with architecture decisions
-- `/orchestrate bugfix <desc>` - Bug investigation (Planner focuses on root cause)
-- `/orchestrate refactor <desc>` - Safe refactoring (Planner focuses on preserving behavior)
+- `/orchestrate feature <desc>` - Feature work; use planner only when the concrete criteria apply
+- `/orchestrate bugfix <desc>` - Bug investigation; use planner only when dependent phases, boundary coordination, or material design choices require it
+- `/orchestrate refactor <desc>` - Refactoring; use planner only when the concrete criteria apply
 
 ## Example
 
 ```
 User: /orchestrate feature "Add rate limiting to API endpoints"
 
--> Planner (opus): analyzes codebase, designs rate limiting strategy,
-   outputs plan with middleware approach, Redis counter, per-endpoint config
--> User confirms plan
+-> Client finds middleware, Redis storage, and per-endpoint configuration
+   need coordinated contracts and sequencing across technical boundaries
+-> Client explains that evidence and asks the user for permission to send
+   this task to planner; user explicitly agrees
+-> Planner (opus) analyzes the sources and writes the plan and ADRs
+-> Client presents the plan path and summary; user reviews the plan and
+   sets Approval [x]
 -> Test Writer (sonnet): writes independent tests and confirms RED
 -> Implementation Owner (sonnet): implements production code from the contract
 -> Evaluator (sonnet): identifies one concrete quality issue through post-completion QA

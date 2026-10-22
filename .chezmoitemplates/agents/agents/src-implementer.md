@@ -17,8 +17,8 @@ Conditional: Read `tdd-workflow` when the selected verification uses behavioral 
 - Follow the existing source layout, public names, types, error handling, and dependency boundaries defined by the plan or work order.
 - Implement the smallest production change that satisfies the requirements and shared contract.
 - Run the project's relevant task-runner DoD commands for the selected verification strategy and report every result.
-- If the source contract conflicts with the Terraform boundary or the plan, stop and return the conflict to the client or planner instead of changing another boundary.
+- If the source contract conflicts with the Terraform boundary or the plan, stop and return the conflict to the client instead of changing another boundary. The client checks whether the current planner permission covers the issue before handing it to planner.
 
 ## Output
 
-Report the source files changed, the contract implemented, the test or domain-specific validation evidence, the DoD commands and results, and any design decision returned to the planner.
+Report the source files changed, the contract implemented, the test or domain-specific validation evidence, the DoD commands and results, and any design decision returned to the client.

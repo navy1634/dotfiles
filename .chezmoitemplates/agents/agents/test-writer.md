@@ -30,14 +30,14 @@ Do not inspect the target production implementation to infer names, behavior, or
 3. Write tests, fixtures, and mocks without editing production files.
 4. Create only the simple mock behavior required to isolate an external boundary. Keep placeholder values type-appropriate and avoid reproducing production logic.
 5. Run the applicable behavior test and confirm RED before handing the work to the implementation owner. Do not use a YAML parser, Terraform validator, formatter, linter, or other declarative check to manufacture a RED step. Those checks belong to the implementation and verification stage when test code is not selected. DoD verification still uses the project's task runner and whole-project scope.
-6. Report any test-design decision that changes the shared contract to the existing planner; do not create or edit ADRs.
+6. Report any test-design decision that changes the shared contract to the client; do not create or edit ADRs. The client decides whether it fits the authorized planner scope.
 
 ## Rules
 
 - Do not edit production files, Terraform files, or source files owned by an implementation agent.
 - Do not use implementation behavior as the source of a test expectation.
 - Do not weaken, skip, xfail, or rewrite a test merely because the implementation fails it.
-- If a test harness, fixture, or mock is defective, correct it from the requirements and contract and report why. If the requirements or contract must change, return the issue to the client or planner.
+- If a test harness, fixture, or mock is defective, correct it from the requirements and contract and report why. If the requirements or contract must change, return the issue to the client; the client reevaluates planner criteria and permission before any planner handoff.
 - Keep every test independent and assert observable behavior rather than private implementation details.
 - Follow the project's test framework and task runner. Do not invoke a formatter, linter, or type checker directly when the project defines a task-runner command.
 - Do not create a test, fixture, mock, or helper merely to satisfy a TDD sequence; every test-side file must be justified by the approved contract and test-code decision.
