@@ -27,15 +27,48 @@ If either section is missing, incomplete, outside the shared planner criteria, o
 
 ## Skill Loading
 
-Required: Use the `planner` skill (`/plan`) for the full process, constraints, and output format. The shared repository rules in `rules/agents.md` take precedence over any legacy output-path example in that skill.
+Required: Use the `planner` skill (`/plan`) for the full process, constraints, and output format.
+The plan path and approval rules in this configuration take precedence over legacy examples in that skill.
 
 Conditional: Read `backend-patterns`, `terraform`, `gh-actions`, `security-review`, or the relevant source-language and project-specific skill only when the plan covers that boundary.
 
-Use this role only for work that meets the planner triggers in the shared rules and passes the invocation gate above. Write the plan only to `~/.agents/plan/<repository-slug>/<task-slug>/plan.md`, and create the design ADRs in the same directory, using a `<repository-slug>` derived from the absolute Git common directory and a `<task-slug>` that starts with the work-start date in `YYYYMMDD-...` form. Leave the `Approval` checkbox unchecked, and never change it to `[x]` or claim that the user approved the plan. A user's instruction to implement the plan is not plan approval. The client gives the user the saved plan path and a concise summary instead of pasting the full plan into chat; the user reviews the saved file and alone changes the checkbox to `[x]` after explicit approval. The implementation owner does not create or modify ADRs; return any new decision to the client, which checks whether it is within the authorized scope before routing it back here.
+Use this role only when the planner criteria and invocation gate above are satisfied.
+Write the plan only to `~/.agents/plan/<repository-slug>/<task-slug>/plan.md`.
+Create design ADRs in the same directory.
+Start `<task-slug>` with the work-start date in `YYYYMMDD-...` form.
+Leave `Approval` unchecked and never change it to `[x]` or claim user approval.
+A user's instruction to implement the plan is not plan approval.
+The client gives the user the saved plan path and a concise summary.
+The user reviews the saved file and alone changes the checkbox to `[x]` after explicit approval.
+Implementation owners do not create or modify ADRs.
+Return a new decision to the client to check whether it falls within the authorized scope.
+
+Run `git rev-parse --path-format=absolute --git-common-dir` to locate the Git common directory.
+Use its final directory name for `<repository-slug>` after removing `.git`.
+Do not use a worktree directory name or the legacy Claude plan directory.
 
 Before creating a task directory, the client identifies whether the same requested outcome already has a task directory under `~/.agents/plan/<repository-slug>/`. A continuation, revised requirement, review correction, evaluator `REDESIGN`, or later work session for that outcome reuses the original directory and exact `plan.md` path; a date change or plan revision does not create a new `<task-slug>`. Create a new directory only for an independently requested outcome. If existing records do not establish the canonical directory, return that ambiguity to the client instead of creating another directory.
 
-Before revising an existing `plan.md` or ADR, read the current file and its diff, then use a targeted `apply_patch` edit on the canonical file; do not replace it wholesale or create a temporary copy. Follow the shared rule in `AGENTS.md`: preserve an `.old` snapshot only when a user change to requirements or requested scope supersedes an existing plan or ADR that records the former requirements. Do not archive an in-progress draft, corrections or review feedback within the same requirements, wording changes, or Approval-only updates. Keep the same task directory and canonical path for a continuation or changed requirement; do not create a new directory or canonical file for the same outcome. Never overwrite an existing archive. Archived files are historical only and do not count as the current plan or ADR. A requirement change that materially revises the current plan resets its `Approval` to `[ ]`. Only the user may approve the revised plan; evaluator PASS is not approval. Do not start dependent work or external operations such as registering secrets or running workflows before that approval.
+Before revising an existing `plan.md` or ADR, read the current file and its diff.
+Edit the canonical file with a targeted `apply_patch` change.
+Do not replace it wholesale or create a temporary copy.
+Preserve an `.old` snapshot only when a user change supersedes requirements recorded in the existing plan or ADR.
+Name an affected snapshot `plan.md.<YYYYMMDD-HHMMSS>.old` or `ADR-001.md.<YYYYMMDD-HHMMSS>.old` in the same task directory.
+Do not copy the task directory or files unaffected by the changed requirements.
+Do not archive an in-progress draft, corrections or review feedback within the same requirements, wording changes, or Approval-only updates.
+Keep the same task directory and canonical path for a continuation or changed requirement.
+Do not create a new directory or canonical file for the same outcome.
+Never overwrite an existing archive.
+Archived files are historical only and do not count as the current plan or ADR.
+A requirement change that materially revises the current plan resets its `Approval` to `[ ]`.
+Only the user may approve the revised plan; evaluator PASS is not approval.
+Do not start dependent work or external operations such as registering secrets or running workflows before that approval.
+
+Record each design decision in its ADR when the decision is made.
+Do not defer several ADRs until the plan is complete or create the plan and all ADRs as a single batch.
+Inspect only the necessary parts of an existing plan or ADR.
+Do not dump the complete plan or long excerpts into command output, tool output, or work logs.
+Log the path, `Approval` state, and result of the check instead.
 
 ## Plan Completion and Self-Review
 

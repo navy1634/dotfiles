@@ -33,7 +33,9 @@ Before the first handoff of a task to planner, the client must state the qualify
 
 For example, a bounded Terraform import is a small implementation when the target resource addresses and remote IDs are known and the repository's existing Terraform pattern determines the change. Handle it directly without invoking planner or creating `plan.md`, then verify it with the applicable Terraform checks, including `terraform plan`. The number of import entries or touched Terraform files alone does not change the route.
 
-For work where test code is appropriate, select one test-writer before selecting the production implementation owner. The client records why tests are useful and what behavior they verify; if domain-specific validation is sufficient, record that method and do not select a test-writer. The test-writer and implementation owner both use the requirements and the approved plan or direct work-order contract as their source of truth. A test-writer does not derive a public name, signature, or behavior from production code, and an implementation owner does not derive behavior from test code. For a small route without a plan, the work order must contain the same contract details and explicitly state that no plan file is used.
+For work where test code is appropriate, select one test-writer per work unit before selecting its production implementation owner.
+Multiple independent work units may each have one test-writer and one implementation owner only when their contracts and write scopes are independent.
+The client records why tests are useful and what behavior they verify; if domain-specific validation is sufficient, record that method and do not select a test-writer. The test-writer and implementation owner both use the requirements and the approved plan or direct work-order contract as their source of truth. A test-writer does not derive a public name, signature, or behavior from production code, and an implementation owner does not derive behavior from test code. For a small route without a plan, the work order must contain the same contract details and explicitly state that no plan file is used.
 
 When a task crosses technical boundaries, split the implementation owner by boundary only when the plan identifies separate write scopes and contracts. For example, an AWS Lambda task may use one terraform-implementer for Terraform files and one src-implementer for application source files. Use at most one agent for each boundary, never one per file. Keep the generic generator for work that does not need a boundary-specific implementation owner.
 
@@ -206,7 +208,7 @@ The main session controls the pipeline using the agents available in the executi
 
 Do not assume that a contractor can see the parent conversation. Pass all required information in the work order. Subagents must not invoke other subagents; the parent client owns the role map and lifecycle. Require structured reports, and use files for large data exchange when the environment supports a shared workspace.
 
-Japanese docstrings and comments must not end with `。`, including immediately before a closing `"""` in one-line or multi-line docstrings.
+Write new docstrings and comments in Japanese and match the surrounding punctuation and placement.
 
 ## Invocation Rules
 
