@@ -36,6 +36,7 @@ extends = ":workspace"
 
 [permissions.workspace-no-env.filesystem]
 glob_scan_max_depth = 10
+"{{ .chezmoi.homeDir }}/.agents" = "write"
 
 [permissions.workspace-no-env.network]
 enabled = true
