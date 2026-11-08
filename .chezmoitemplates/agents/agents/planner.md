@@ -52,6 +52,7 @@ Before creating a task directory, the client identifies whether the same request
 Before revising an existing `plan.md` or ADR, read the current file and its diff.
 Edit the canonical file with a targeted `apply_patch` change.
 Do not replace it wholesale or create a temporary copy.
+When revising an ADR, preserve its existing title verbatim, edit only its body, and confirm the title is unchanged afterward.
 Preserve an `.old` snapshot only when a user change supersedes requirements recorded in the existing plan or ADR.
 Name an affected snapshot `plan.md.<YYYYMMDD-HHMMSS>.old` or `ADR-001.md.<YYYYMMDD-HHMMSS>.old` in the same task directory.
 Do not copy the task directory or files unaffected by the changed requirements.

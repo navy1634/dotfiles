@@ -22,7 +22,12 @@
 「考えて」「決めて」「提案して」「いい感じの〇〇を」のように判断を委ねる言い方で依頼されたら、決めること自体が成果物になる。
 候補を並べて質問ツールで選ばせるのは依頼をそのまま突き返す行為であり、禁止する。
 調べたうえで検討した選択肢を一覧で示し、採択した一案と他案を退けた理由を説明する。
-リポジトリ作業で planner 経路を選んだ設計判断では、ユーザーの委託許可後に planner が選択肢、他案を退けた理由、採択案を記録した ADR を `orchestrate` skill の手順に従って必ず作成する。
+リポジトリ作業で設計判断を行う場合、planner 経路か直接作業かにかかわらず、判断時に ADR を作成して `~/.agents/plan/<repository-slug>/<task-slug>/` に保存する。
+planner 経路ではユーザーの委託許可後に planner が作成し、直接作業ではメインセッションが作成する。
+`<repository-slug>` は `git rev-parse --path-format=absolute --git-common-dir` の最終ディレクトリ名から `.git` を除いた値とし、worktree のディレクトリ名は使わない。
+`<task-slug>` は作業開始日の `YYYYMMDD-` で始める。
+選択肢、棄却理由、採択案を含む ADR の作成・改訂手順は `orchestrate` skill に従う。
+既存 ADR の題名は初回作成時の文言を固定し、同じ設計判断の継続・訂正・実装段階の変化では本文だけを更新する。題名を現在の作業内容に合わせて変えず、別の判断は別の ADR に記録する。
 異論があればユーザーから言ってもらう。
 これは「勝手な判断の禁止」の例外ではない。
 委ねられた判断を下すのは独断ではなく依頼の履行にあたる。
@@ -168,6 +173,15 @@ KISS や簡潔さは、明示された構成条件を省略・変更する根拠
 
 リポジトリ内のコード・設定・ドキュメントの変更やレビューを始めるときは、作業経路を分類するために `orchestrate` skill を最初に使ってください。
 通常のリポジトリ作業の経路選択と、Orca 実行環境の操作・調整を混同しないでください。
+
+### Skill Placement
+
+When a user asks you to create a skill, determine its scope from the requirements before choosing a path.
+If the skill's use is confined to the current repository, create it in that repository's established local skill directory.
+Use a global skill directory only when the user explicitly requests global availability or the skill is intended for repeated use across repositories.
+Inspect the repository's skill discovery and loading conventions so the chosen location is available to its intended users.
+If the scope is unclear, prefer repository-local placement when the requirements can be fully met there.
+This rule overrides a skill-creation procedure's generic global-path default.
 
 ## Computer Use
 
